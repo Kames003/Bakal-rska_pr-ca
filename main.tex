@@ -1,14 +1,72 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+% Bakalárska práca - Tomáš Mucha
+% Absolvovanie individuálnej odbornej praxe
+\documentclass[slovak,bachelorpractice]{diploma}
 
-\title{Bakalárska_práca}
-\author{Tomáš Muča}
-\date{April 2026}
+% Balíky
+\usepackage[autostyle=true,czech=quotes]{csquotes}
+\usepackage[backend=biber, style=iso-numeric, alldates=iso]{biblatex}
+\usepackage{dcolumn}
+\usepackage{subfig}
+\usepackage[cpp]{diplomalst}
 
+% === METADATA ===
+\ThesisAuthor{Tomáš Mucha}
+\ThesisSupervisor{Ing. Pavel Dohnálek, Ph.D.}
+\CzechThesisTitle{Absolvovanie individuálnej odbornej praxe}
+\EnglishThesisTitle{Individual Professional Practice in the Company}
+\SubmissionYear{2026}
+\ThesisAssignmentFileName{ZadaniePrace.pdf}
+
+% === POĎAKOVANIE ===
+\Acknowledgement{Rád by som poďakoval vedúcemu práce Ing. Pavlovi Dohnálkovi, Ph.D. za odborné vedenie. Ďalej ďakujem konzultantovi Bc. Janovi Mitorajovi a celému tímu spoločnosti Railsformers s.r.o. za príležitosť vykonať odbornú prax a za cenné skúsenosti.}
+
+% === ABSTRAKT SK ===
+\CzechAbstract{Táto bakalárska práca popisuje priebeh individuálnej odbornej praxe v spoločnosti Railsformers s.r.o. Práca obsahuje popis firmy a pracovného zaradenia študenta, zoznam zadaných úloh s ich časovou náročnosťou a zvolený postup riešenia. Ďalej sú popísané teoretické a praktické znalosti získané počas štúdia, ktoré boli uplatnené v praxi, a tiež znalosti, ktoré študentovi chýbali. V závere sú zhrnuté dosiahnuté výsledky a celkové zhodnotenie praxe.}
+
+\CzechKeywords{odborná prax; Railsformers; vývoj softvéru}
+
+% === ABSTRAKT EN ===
+\EnglishAbstract{This bachelor thesis describes the course of individual professional practice at Railsformers s.r.o. The thesis contains a description of the company and the student's job position, a list of assigned tasks with their time requirements, and the chosen approach to solving them. Furthermore, the theoretical and practical knowledge gained during studies that was applied in practice is described, as well as the knowledge that the student lacked. The conclusion summarizes the achieved results and overall evaluation of the practice.}
+
+\EnglishKeywords{professional practice; Railsformers; software development}
+
+% === SKRATKY ===
+% Doplniť podľa použitých technológií
+% \AddAcronym{API}{Application Programming Interface}
+% \AddAcronym{REST}{Representational State Transfer}
+% \AddAcronym{SQL}{Structured Query Language}
+
+% === LITERATÚRA ===
+\addbibresource{literatura.bib}
+
+\newcolumntype{d}[1]{D{,}{,}{#1}}
+
+% === DOKUMENT ===
 \begin{document}
 
-\maketitle
+\MakeTitlePages
 
-\section{Introduction}
+% Zoznamy (odkomentovať až budú obrázky/tabuľky)
+%\listoffigures
+%\clearpage
+%\listoftables
+%\clearpage
+
+% === KAPITOLY ===
+\input{Chapters/Introduction.tex}
+\input{Chapters/Chapter1_Firma.tex}
+\input{Chapters/Chapter2_Ulohy.tex}
+\input{Chapters/Chapter3_Riesenie.tex}
+\input{Chapters/Chapter4_Znalosti.tex}
+\input{Chapters/Chapter5_Chybajuce.tex}
+\input{Chapters/Chapter6_Vysledky.tex}
+\input{Chapters/Conclusion.tex}
+
+% === LITERATÚRA ===
+\printbibliography[title={Literatúra}, heading=bibintoc]
+
+% === PRÍLOHY ===
+% \appendix
+% \input{Chapters/Appendix1.tex}
 
 \end{document}
