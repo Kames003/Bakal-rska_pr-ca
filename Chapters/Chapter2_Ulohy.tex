@@ -1,60 +1,83 @@
-\chapter{Seznam úkolů zadaných studentovi s vyjádřením časové náročnosti}
+\chapter{Zoznam úloh zadaných študentovi s~vyjadrením časovej náročnosti}
 \label{sec:Ulohy}
 
 % Rozsah: 1-2 strany
 
-\section{Přehled úkolů}
+Táto kapitola poskytuje prehľad úloh, ktoré mi boli zadané počas odbornej praxe vo firme Railsformers s.r.o. Úlohy boli evidované v~systéme Redmine, kde som priebežne zaznamenával odpracovaný čas a~stav spracovania.
+
+\section{Prehľad úloh}
 \label{sec:PrehledUkolu}
 
-% Hlavní tabulka úkolů s časovou náročností
-% TODO: Doplnit tabulku
-%
-% | # | Úkol | Popis | Technologie | Hodiny |
-% |---|------|-------|-------------|--------|
-% | 1 | Hardware Setup | Gateway, trackery | LoRaWAN | ~15h |
-% | 2 | MQTT + Parser | TLS broker, parsování | Python | ~25h |
-% | 3 | Databáze | Schema, TimescaleDB, PostGIS | PostgreSQL | ~20h |
-% | 4 | Backend API | Flask REST, WebSocket | Flask | ~30h |
-% | 5 | Frontend | React, Leaflet, 3 módy | React | ~35h |
-% | 6 | Geofencing | Polygony, alerting | PostGIS | ~15h |
-% | 7 | Optimalizace | Bezpečnost, edge cases | Všechny | ~15h |
-% | 8 | Testování | Simulátor, real-world | Python | ~10h |
-% | CELKEM | | | | ~165h |
+Hlavná úloha nesúca názov \emph{LoRaWAN GPS trackery} bola rozdelená do viacerých dielčích podúloh podľa logických celkov vývoja. Tabuľka~\ref{tab:ulohy} sumarizuje všetky úlohy s~odhadovanou a~skutočnou časovou náročnosťou.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Prehľad úloh s~časovou náročnosťou}
+    \label{tab:ulohy}
+    \begin{tabular}{|c|l|l|c|}
+        \hline
+        \textbf{\#} & \textbf{Úloha} & \textbf{Technológie} & \textbf{Hodiny} \\
+        \hline
+        1 & Konfigurácia hardvéru & LoRaWAN, SenseCap & $\sim$15 \\
+        2 & MQTT broker a~parser & Python, paho-mqtt & $\sim$25 \\
+        3 & Návrh databázy & PostgreSQL, TimescaleDB, PostGIS & $\sim$20 \\
+        4 & Backend API & Flask, Socket.IO & $\sim$30 \\
+        5 & Frontend aplikácia & React, Vite, Leaflet.js & $\sim$35 \\
+        6 & Geofencing & PostGIS, WebSocket & $\sim$15 \\
+        7 & Optimalizácie a~bezpečnosť & TLS, CORS & $\sim$15 \\
+        8 & Testovanie & Python, real-world testy & $\sim$10 \\
+        \hline
+        & \textbf{Celkom} & & \textbf{$\sim$165} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Podľa evidencie v~Redmine som na projekte odpracoval celkovo 137 hodín a~15 minút z~pôvodne odhadovaných 150 hodín. Rozdiel oproti súčtu v~tabuľke vyplýva z~prekrývania úloh -- niektoré činnosti (napríklad optimalizácie) prebiehali priebežne počas vývoja ostatných komponentov.
+
+Časové rozloženie práce kopírovalo prirodzený vývoj projektu -- od hardvérovej konfigurácie cez backend až po frontend a~geofencing funkcionalitu. Najväčší podiel času zabrala implementácia frontendu, čo je typické pre aplikácie s~komplexným používateľským rozhraním.
 
 
-\section{Stručný popis úkolů}
+\section{Stručný popis úloh}
 \label{sec:PopisUkolu}
 
-\subsection{Hardware Setup}
-% Konfigurace LoRaWAN gateway a GPS trackerů
-% TODO: Doplnit popis
+\subsection{Konfigurácia hardvéru}
+\label{sec:UlohaHW}
 
-\subsection{MQTT a Parser}
-% Implementace MQTT klienta s TLS a parseru
-% TODO: Doplnit popis
+Prvou úlohou bola konfigurácia LoRaWAN infraštruktúry -- gateway RAK7289 V2 a~GPS trackerov SenseCap T1000-B. Práca zahŕňala aktualizáciu firmware gateway z~verzie 2.2.2 na 2.2.14, nastavenie frekvenčného plánu EU868 a~konfiguráciu MQTT integrácie pre odosielanie dát na firemný broker. Trackery boli registrované pomocou OTAA aktivácie s~unikátnymi kľúčmi DevEUI, AppEUI a~AppKey.
 
-\subsection{Databáze}
-% Návrh schématu s TimescaleDB a PostGIS
-% TODO: Doplnit popis
+\subsection{MQTT broker a~parser}
+\label{sec:UlohaMQTT}
+
+Druhá úloha sa zameriavala na pripojenie backendu k~MQTT brokeru \texttt{mqtt.hedurio.com} s~TLS šifrovaním a~implementáciu parsera pre dekódovanie správ z~trackerov. Parser spracováva formát SenseCap, ktorý obsahuje GPS súradnice, stav batérie, teplotu a~ďalšie telemetrické údaje vo formáte Base64/HEX. Súčasťou boli aj validácie pre edge cases ako GPS cold start či drift súradníc.
+
+\subsection{Návrh databázy}
+\label{sec:UlohaDB}
+
+Tretia úloha zahŕňala návrh a~implementáciu databázovej schémy v~PostgreSQL s~využitím rozšírení TimescaleDB pre efektívne ukladanie časových radov pozícií a~PostGIS pre geospatial operácie. Schéma obsahuje tabuľky pre zariadenia, pozície, geofence zóny a~body záujmu (POI). Implementoval som indexy, triggery a~optimalizované dotazy pre historické dáta.
 
 \subsection{Backend API}
-% REST API a real-time WebSocket
-% TODO: Doplnit popis
+\label{sec:UlohaAPI}
 
-\subsection{Frontend}
-% React aplikace s mapou a 3 režimy
-% TODO: Doplnit popis
+Štvrtá úloha predstavovala vývoj REST API vo frameworku Flask s~viac ako 28 endpointmi pre správu zariadení, pozícií, geofences a~POI. Súčasťou bola implementácia real-time komunikácie pomocou Socket.IO, ktorá umožňuje okamžité doručovanie nových pozícií do webového klienta bez potreby pollingu.
+
+\subsection{Frontend aplikácia}
+\label{sec:UlohaFrontend}
+
+Piata a~časovo najnáročnejšia úloha bola implementácia webovej aplikácie v~React s~využitím Vite ako build nástroja a~Leaflet.js pre mapovú vizualizáciu. Aplikácia podporuje tri režimy zobrazenia -- Live Tracking pre sledovanie v~reálnom čase, Historical Playback pre prehliadanie histórie pohybu a~Geofencing pre správu virtuálnych zón.
 
 \subsection{Geofencing}
-% Virtuální zóny s detekcí a notifikacemi
-% TODO: Doplnit popis
+\label{sec:UlohaGeofencing}
 
-\subsection{Optimalizace a bezpečnost}
-% TLS, CORS, edge cases, performance
-% TODO: Doplnit popis
+Šiesta úloha rozšírila aplikáciu o~funkcionalitu geofencing -- možnosť definovať polygonálne virtuálne zóny na mape a~automaticky detekovať vstup, výstup alebo zotrvania zariadenia v~zóne. Implementoval som alert systém s~vizuálnymi notifikáciami a~históriou udalostí.
 
-\subsection{Testování}
-% Simulátor a testování s reálnými trackery
-% TODO: Doplnit popis
+\subsection{Optimalizácie a~bezpečnosť}
+\label{sec:UlohaOptimalizacie}
+
+Siedma úloha sa zamerala na zabezpečenie aplikácie (TLS komunikácia, CORS politika, parameterized SQL queries) a~optimalizáciu výkonu (connection pooling, efektívne indexy, lazy loading). Riešil som tiež edge cases ako race conditions pri súbežnom zápise pozícií a~ošetrenie neplatných GPS dát.
+
+\subsection{Testovanie}
+\label{sec:UlohaTesting}
+
+Posledná úloha zahŕňala vývoj GPS simulátora pre generovanie testovacích dát bez potreby fyzických trackerov a~testovanie systému v~reálnych podmienkach. Simulátor umožňuje definovať trasy, rýchlosť pohybu a~simulovať rôzne scenáre vrátane výpadkov signálu.
 
 \endinput
