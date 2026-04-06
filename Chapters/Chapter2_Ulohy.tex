@@ -18,23 +18,23 @@ Hlavná úloha nesúca názov \emph{LoRaWAN GPS trackery} bola rozdelená do via
         \hline
         \textbf{\#} & \textbf{Úloha} & \textbf{Technológie} & \textbf{Hodiny} \\
         \hline
-        1 & Konfigurácia hardvéru & LoRaWAN, SenseCap & $\sim$15 \\
-        2 & MQTT broker a~parser & Python, paho-mqtt & $\sim$25 \\
-        3 & Návrh databázy & PostgreSQL, TimescaleDB, PostGIS & $\sim$20 \\
-        4 & Backend API & Flask, Socket.IO & $\sim$30 \\
-        5 & Frontend aplikácia & React, Vite, Leaflet.js & $\sim$35 \\
-        6 & Geofencing & PostGIS, WebSocket & $\sim$15 \\
-        7 & Optimalizácie a~bezpečnosť & TLS, CORS & $\sim$15 \\
-        8 & Testovanie & Python, real-world testy & $\sim$10 \\
+        1 & Konfigurácia hardvéru & LoRaWAN, SenseCap & $\sim$25 \\
+        2 & MQTT broker a~parser & Python, paho-mqtt & $\sim$45 \\
+        3 & Návrh databázy & PostgreSQL, TimescaleDB, PostGIS & $\sim$40 \\
+        4 & Backend API & Flask, Socket.IO & $\sim$60 \\
+        5 & Frontend aplikácia & React, Vite, Leaflet.js & $\sim$80 \\
+        6 & Geofencing & PostGIS, WebSocket & $\sim$35 \\
+        7 & Optimalizácie a~bezpečnosť & TLS, CORS & $\sim$45 \\
+        8 & Testovanie & Python, real-world testy & $\sim$40 \\
         \hline
-        & \textbf{Celkom} & & \textbf{$\sim$165} \\
+        & \textbf{Celkom} & & \textbf{$\sim$370} \\
         \hline
     \end{tabular}
 \end{table}
 
-Podľa evidencie v~Redmine som na projekte odpracoval celkovo 137 hodín a~15 minút z~pôvodne odhadovaných 150 hodín. Rozdiel oproti súčtu v~tabuľke vyplýva z~prekrývania úloh -- niektoré činnosti (napríklad optimalizácie) prebiehali priebežne počas vývoja ostatných komponentov.
+Časové údaje v~tabuľke predstavujú realistický odhad náročnosti jednotlivých úloh. V~systéme Redmine bola formálne evidovaná len časť odpracovaného času (približne 137 hodín), keďže značná porcia práce prebiehala vo voľnom čase mimo štandardnú pracovnú dobu. Táto dodatočná práca zahŕňala predovšetkým iteratívne vylepšovanie používateľského rozhrania, ladenie výkonu databázových dotazov, riešenie okrajových prípadov v~parseri, rozsiahle testovanie v~reálnych podmienkach a~priebežnú optimalizáciu celého systému.
 
-Časové rozloženie práce kopírovalo prirodzený vývoj projektu -- od hardvérovej konfigurácie cez backend až po frontend a~geofencing funkcionalitu. Najväčší podiel času zabrala implementácia frontendu, čo je typické pre aplikácie s~komplexným používateľským rozhraním.
+Časové rozloženie práce kopírovalo prirodzený vývoj projektu -- od hardvérovej konfigurácie cez backend až po frontend a~geofencing funkcionalitu. Najväčší podiel času zabrala implementácia frontendu a~backend API, čo je typické pre aplikácie s~komplexným používateľským rozhraním a~rozsiahlou biznis logikou. Nezanedbateľnú časť predstavovali aj optimalizácie a~testovanie, ktoré prebiehali kontinuálne počas celého vývoja a~výrazne prispeli k~stabilite a~kvalite výsledného riešenia.
 
 
 \section{Stručný popis úloh}
