@@ -85,14 +85,25 @@ Tabuľka~\ref{tab:aspekty} sumarizuje rozdelenie práce medzi DevOps a~Full-stac
     \end{tabular}
 \end{table}
 
+\subsection{Onboarding a~pracovné prostredie}
+\label{sec:Onboarding}
+
+Na začiatku praxe som absolvoval sériu úvodných workshopov, ktoré ma oboznámili s~firemnými procesmi a~nástrojmi. Prvý workshop bol zameraný na prácu s~nástrojom \textbf{Redmine} -- open-source systém pre projektové riadenie a~sledovanie úloh, ktorý firma využíva pre internú organizáciu práce. V~Redmine mi boli prideľované úlohy s~definovaným rozsahom a~termínmi, pričom som priebežne aktualizoval stav ich spracovania a~po dokončení ich preraďoval na svojho vedúceho ku kontrole.
+
+Ďalší workshop sa venoval firemnej politike používania umelej inteligencie vo vývoji a~súvisiacim bezpečnostným zásadám. Vzhľadom na citlivosť dát, s~ktorými firma pracuje (bezpečnostné agentúry, tracking osôb), bolo dôležité pochopiť pravidlá pre bezpečné narábanie s~informáciami a~zdrojovým kódom.
+
+Pracovisko som mal pridelené v~budove SO1 na druhom poschodí, v~rámci \textbf{Divízie 600 -- Outsourcing}. Táto divízia sa špecializuje na DevOps činnosti -- správu hostingu, údržbu GitLab infraštruktúry, CI/CD pipeline a~súvisiace služby. Dochádzku som evidoval v~Google Kalendári, kde som zaznamenával dni prítomnosti v~kancelárii vrátane časového rozsahu.
+
+Pred samotným hlavným projektom som dostal sériu inicializačných úloh zameraných na osvojenie si DevOps nástrojov a~praktík používaných vo firme. Tieto úlohy zahŕňali prácu s~kontajnermi a~Docker Compose, nastavenie GitLab CI pipeline a~nasadenie aplikácie pomocou nástroja Dokku. Cieľom bolo získať praktické skúsenosti s~technológiami, ktoré sa následne využili pri vývoji hlavného projektu.
+
 \subsection{Mentor a~spolupráca}
 \label{sec:Mentor}
 
 Mojím konzultantom vo firme bol \textbf{Bc. Jan Mitoraj}, ktorý má s~firmou Railsformers dlhoročné skúsenosti. Bc. Mitoraj absolvoval v~roku 2017 odbornú prax v~rovnakej firme, počas ktorej pracoval na IoT projekte -- bráne pre zber dát z~bezdrôtových senzorov. Jeho skúsenosti s~IoT technológiami a~znalosť firemného prostredia boli pre moju prax neoceniteľné.
 
-Spolupráca prebiehala primárne formou online konzultácií. Komunikovali sme prostredníctvom textových správ, kde som pravidelne informoval o~postupe prác, zdieľal screenshoty a~konzultoval technické rozhodnutia. Mentor mi poskytoval spätnú väzbu, odporúčal vhodné technológie a~pomáhal s~riešením problémov.
+Spolupráca prebiehala kombináciou osobných stretnutí a~online komunikácie. Pravidelné porady sa konali dva až trikrát týždenne, pričom takmer každodenne som mentorovi zasielal aktualizácie o~postupe prác prostredníctvom textových správ. Zdieľal som screenshoty implementovaných funkcionalít, konzultoval technické rozhodnutia a~hlásil objavené problémy s~návrhmi riešení.
 
-Frekvencia komunikácie bola približne dva až trikrát týždenne, v~intenzívnejších fázach vývoja aj častejšie. Oceňoval som predovšetkým praktické rady vychádzajúce z~reálnych skúseností -- napríklad odporúčanie použiť TimescaleDB a~PostGIS, ktoré firma využíva v~produkčných projektoch.
+Mentor mi poskytoval konštruktívnu spätnú väzbu, odporúčal vhodné technológie a~pomáhal s~riešením komplexnejších problémov. Oceňoval som predovšetkým praktické rady vychádzajúce z~reálnych skúseností vo firme -- napríklad odporúčanie použiť databázové rozšírenia TimescaleDB a~PostGIS, ktoré firma aktívne využíva v~produkčných projektoch.
 
 \subsection{Projekt}
 \label{sec:Projekt}
@@ -101,7 +112,7 @@ Hlavnou náplňou mojej praxe bol vývoj \textbf{LoRaWAN GPS Tracking System} --
 
 Systém využíva GPS trackery SenseCap T1000-B komunikujúce prostredníctvom technológie LoRaWAN, ktorá umožňuje prenos dát na vzdialenosti až 15 kilometrov pri nízkej spotrebe energie. Dáta z~trackerov sú prijímané cez LoRaWAN gateway RAK7289, prenášané protokolom MQTT do backendu a~zobrazované vo webovej aplikácii s~interaktívnou mapou.
 
-Pracovné prostredie bolo plne remote. Hardvér (gateway a~trackery) som mal k~dispozícii doma, rovnako ako prístup k~MQTT brokeru prevádzkovanému firmou. Vývoj softvéru prebiehal na mojom osobnom počítači s~využitím Docker Compose pre lokálne prostredie.
+Pre vývoj a~testovanie som mal k~dispozícii hardvér (gateway a~trackery) priamo na pracovisku, rovnako ako prístup k~MQTT brokeru prevádzkovanému firmou. Vývoj softvéru prebiehal s~využitím Docker Compose pre lokálne vývojové prostredie, čo umožňovalo rýchlu iteráciu a~testovanie bez závislosti na externej infraštruktúre.
 
 \subsection{Prínos pozície}
 \label{sec:PrinosPozice}
