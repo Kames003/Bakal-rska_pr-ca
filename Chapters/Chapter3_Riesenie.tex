@@ -267,6 +267,13 @@ Proces registrácie som realizoval v~týchto krokoch:
 
 Pri úspešnom pripojení tracker prehrá krátku melódiu signalizujúcu úspešnú registráciu do siete.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/hw-firmware-success.png}
+    \caption{Úspešná aktualizácia firmware na gateway -- verzia 2.2.14}
+    \label{fig:hw-firmware}
+\end{figure}
+
 \subsection{Problémy a~ich riešenia}
 \label{sec:HWProblemy}
 
@@ -353,6 +360,38 @@ Pripojenie na broker vyžadovalo konfiguráciu TLS šifrovania s~klientskými ce
 
 Po úspešnom pripojení sa klient prihlási na odber topicu \texttt{application/SENSECAP/decoded}, kde gateway publikuje dekódované správy z~trackerov. Každá správa je vo formáte JSON a~obsahuje identifikáciu zariadenia, dekódované dáta a~metadáta o~prenose.
 
+Nasledujúca ukážka kódu demonštruje inicializáciu MQTT klienta s~TLS zabezpečením:
+
+\begin{lstlisting}[language=Python, label=src:mqtt-client, caption={Inicializácia MQTT klienta s~TLS autentifikáciou}]
+import paho.mqtt.client as mqtt
+import ssl
+
+class MQTTClient:
+    def __init__(self, config):
+        self.client = mqtt.Client(protocol=mqtt.MQTTv311)
+
+        # TLS konfigurácia s klientskými certifikátmi
+        self.client.tls_set(
+            ca_certs=config.CA_CERT,      # Certifikát CA
+            certfile=config.CLIENT_CERT,   # Klientský certifikát
+            keyfile=config.CLIENT_KEY,     # Klientský kľúč
+            tls_version=ssl.PROTOCOL_TLSv1_2
+        )
+
+        # Callback funkcie
+        self.client.on_connect = self._on_connect
+        self.client.on_message = self._on_message
+
+    def _on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            # Prihlásenie na odber GPS dát
+            client.subscribe("application/SENSECAP/decoded")
+
+    def _on_message(self, client, userdata, msg):
+        # Parsovanie a spracovanie payloadu
+        self.parser.process(msg.payload)
+\end{lstlisting}
+
 \subsection{Parser SenseCap Payloadov}
 \label{sec:Parser}
 
@@ -378,6 +417,48 @@ Správy z~trackerov prichádzajú vo formáte JSON s~vnorenou štruktúrou špec
 \end{table}
 
 Parser iteruje cez pole \texttt{messages}, extrahuje hodnoty podľa measurement ID a~zostavuje štruktúrovaný objekt s~GPS pozíciou a~telemetriou. Ak niektoré povinné pole chýba (latitude alebo longitude), parser vráti \texttt{None} a~správa je zahodená.
+
+\begin{lstlisting}[language=Python, label=src:parser, caption={Extrakcia GPS súradníc z~SenseCap payloadu}]
+MEASUREMENT_IDS = {
+    'LATITUDE': '4198',
+    'LONGITUDE': '4197',
+    'BATTERY': '3000'
+}
+
+def extract_gps(measurements: list) -> dict:
+    """Extrahuje GPS a telemetriu z measurements array"""
+    latitude = longitude = battery = None
+
+    for m in measurements:
+        mid = m.get('measurementId')
+        val = m.get('measurementValue')
+
+        if mid == MEASUREMENT_IDS['LATITUDE']:
+            latitude = val
+        elif mid == MEASUREMENT_IDS['LONGITUDE']:
+            longitude = val
+        elif mid == MEASUREMENT_IDS['BATTERY']:
+            battery = val
+
+    # Validácia povinných polí
+    if latitude is None or longitude is None:
+        return None
+
+    # Validácia rozsahu (WGS84)
+    if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+        return None
+
+    return {'lat': latitude, 'lon': longitude, 'battery': battery}
+\end{lstlisting}
+
+Obrázok~\ref{fig:mqtt-payload} zobrazuje príklad reálnej MQTT správy z~trackera zobrazenej v~pgAdmin po uložení do databázy.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figures/mqtt-tracker-location.png}
+    \caption{Ukážka GPS pozície trackera v~databáze -- latitude, longitude, battery level a~timestamp}
+    \label{fig:mqtt-payload}
+\end{figure}
 
 \subsection{Validácie a~Edge Cases}
 \label{sec:Validace}
@@ -489,6 +570,28 @@ Výhody hypertables:
 
 Pre tabuľku \texttt{positions} som nastavil chunk interval 1 týždeň, kompresiu pre dáta staršie ako 7 dní a~retention policy pre dáta staršie ako 90 dní.
 
+\begin{lstlisting}[language=SQL, label=src:hypertable, caption={Vytvorenie TimescaleDB hypertable s~kompresiou}]
+-- Konverzia bežnej tabuľky na hypertable
+SELECT create_hypertable(
+    'positions',
+    'timestamp',
+    chunk_time_interval => INTERVAL '1 week',
+    if_not_exists => TRUE
+);
+
+-- Aktivácia automatickej kompresie
+ALTER TABLE positions SET (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'device_id'
+);
+
+-- Politika kompresie: dáta staršie ako 7 dní
+SELECT add_compression_policy('positions', INTERVAL '7 days');
+
+-- Politika retencie: mazanie dát starších ako 90 dní
+SELECT add_retention_policy('positions', INTERVAL '90 days');
+\end{lstlisting}
+
 \subsection{PostGIS -- Geospatial Operácie}
 \label{sec:PostGIS}
 
@@ -578,6 +681,52 @@ Pre zníženie komplexity aplikačnej logiky som implementoval databázové trig
 \end{itemize}
 
 Tento prístup zabezpečuje konzistenciu dát aj v~prípade, že by sa niekto pokúsil vložiť dáta priamo do databázy bez použitia aplikácie.
+
+\begin{lstlisting}[language=SQL, label=src:trigger, caption={PostGIS trigger pre automatické vytvorenie geografického bodu}]
+-- Funkcia: vytvorí PostGIS POINT z lat/lon
+CREATE OR REPLACE FUNCTION populate_location()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.location = ST_SetSRID(
+        ST_MakePoint(NEW.longitude, NEW.latitude),
+        4326  -- WGS84 súradnicový systém
+    )::geography;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: spustí sa pred každým INSERT
+CREATE TRIGGER set_location
+BEFORE INSERT OR UPDATE ON positions
+FOR EACH ROW EXECUTE FUNCTION populate_location();
+\end{lstlisting}
+
+Pre funkcionalitu ``Nearby search'' (vyhľadanie zariadení v~okruhu od bodu) som vytvoril databázovú funkciu využívajúcu PostGIS operátor \texttt{ST\_DWithin}:
+
+\begin{lstlisting}[language=SQL, label=src:nearby, caption={PostGIS funkcia pre vyhľadanie zariadení v~okruhu}]
+CREATE OR REPLACE FUNCTION get_nearby_devices(
+    target_lat DOUBLE PRECISION,
+    target_lon DOUBLE PRECISION,
+    max_distance_km REAL DEFAULT 5.0
+) RETURNS TABLE (
+    device_id TEXT, device_name TEXT,
+    latitude DOUBLE PRECISION, longitude DOUBLE PRECISION,
+    distance_km REAL
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT d.device_id, d.device_name, p.latitude, p.longitude,
+           (ST_Distance(p.location,
+               ST_SetSRID(ST_MakePoint(target_lon, target_lat), 4326)
+           ) / 1000.0)::REAL AS distance_km
+    FROM latest_positions p
+    JOIN devices d ON p.device_id = d.device_id
+    WHERE ST_DWithin(p.location,
+        ST_SetSRID(ST_MakePoint(target_lon, target_lat), 4326)::geography,
+        max_distance_km * 1000);  -- konverzia km na metre
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
 
 
 %% ============================================================
@@ -686,6 +835,33 @@ Implementoval som nasledujúce WebSocket eventy:
     \item \textbf{initial\_state} -- Odoslaný novému klientovi pri pripojení s~aktuálnym stavom
 \end{itemize}
 
+Nasledujúca ukážka demonštruje broadcast novej pozície všetkým pripojeným klientom:
+
+\begin{lstlisting}[language=Python, label=src:websocket, caption={WebSocket broadcast novej GPS pozície}]
+from flask_socketio import SocketIO, emit
+
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+def broadcast_position(position_data: dict):
+    """Odošle novú pozíciu všetkým pripojeným klientom"""
+    socketio.emit('new_position', {
+        'device_id': position_data['device_id'],
+        'latitude': position_data['latitude'],
+        'longitude': position_data['longitude'],
+        'battery': position_data['battery'],
+        'timestamp': position_data['timestamp'].isoformat()
+    }, namespace='/')
+
+def broadcast_geofence_alert(alert_data: dict):
+    """Odošle geofence alert pri vstupe/výstupe zo zóny"""
+    socketio.emit('geofence_alert', {
+        'device_id': alert_data['device_id'],
+        'zone_name': alert_data['zone_name'],
+        'event_type': alert_data['event_type'],  # 'entry'/'exit'
+        'timestamp': alert_data['timestamp'].isoformat()
+    }, namespace='/')
+\end{lstlisting}
+
 \subsection{Connection Pooling}
 \label{sec:ConnectionPooling}
 
@@ -777,6 +953,13 @@ Implementoval som dva typy vizualizácie:
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=0.95\textwidth]{Figures/fe-v2-trail.png}
+    \caption{Historical mode s~trail vizualizáciou -- modrá čiara zobrazuje trasu pohybu trackera}
+    \label{fig:fe-trail}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
     \includegraphics[width=0.95\textwidth]{Figures/heat_mapa_v_historical_mode.png}
     \caption{Historical mode s~heatmap vizualizáciou -- červené oblasti ukazujú miesta najčastejšieho pobytu}
     \label{fig:fe-heatmap}
@@ -848,6 +1031,28 @@ Algoritmus detekcie:
     \item WebSocket broadcast alertu všetkým pripojeným klientom
 \end{enumerate}
 
+Nasledujúca ukážka demonštruje SQL dotaz pre detekciu zón obsahujúcich danú pozíciu:
+
+\begin{lstlisting}[language=SQL, label=src:geofence-detect, caption={PostGIS detekcia zariadenia v~geofence zónach}]
+-- Nájdi všetky zóny obsahujúce danú GPS pozíciu
+SELECT g.id, g.name, g.zone_type
+FROM geofences g
+WHERE ST_Contains(
+    g.polygon,
+    ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+) AND g.active = TRUE;
+
+-- Parametre: $1 = longitude, $2 = latitude
+-- Výsledok: zoznam zón, v ktorých sa zariadenie nachádza
+\end{lstlisting}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figures/geo-zone-alerts.png}
+    \caption{Geofence alerty -- notifikácie o~vstupe a~výstupe zariadení zo zón v~reálnom čase}
+    \label{fig:geo-alerts}
+\end{figure}
+
 Táto architektúra zabezpečuje detekciu v~reálnom čase s~minimálnou latenciou.
 
 \subsection{Points of Interest}
@@ -872,7 +1077,21 @@ Implementované funkcie POI:
     \item Vizualizácia na mape ako kruh s~definovaným rádiusom
 \end{itemize}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figures/poi-creation.png}
+    \caption{Vytvorenie nového Point of Interest -- zadanie názvu, rádiusu a~kategórie}
+    \label{fig:poi-create}
+\end{figure}
+
 Funkcia nearby search využíva PostGIS \texttt{ST\_DWithin} pre efektívne vyhľadanie zariadení v~okruhu od POI. Konzultant ocenil túto funkcionalitu ako veľmi praktickú pre reálne nasadenie.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Figures/geo-nearby-search.png}
+    \caption{Nearby search -- vyhľadanie zariadení v~okruhu 500m od zadaného bodu}
+    \label{fig:nearby-search}
+\end{figure}
 
 \subsection{Device Tags}
 \label{sec:DeviceTags}
