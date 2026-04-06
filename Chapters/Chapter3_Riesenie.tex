@@ -1,23 +1,23 @@
 \chapter{Zvolený postup riešenia zadaných úloh}
 \label{sec:Reseni}
 
-% Rozsah: 25-30 strán - JADRO PRÁCE
+% Rozsah: 15-25 strán - JADRO PRÁCE
 
-Táto kapitola detailne popisuje implementáciu jednotlivých komponentov systému LoRaWAN GPS Tracking. Pri každej časti uvádzam teoretický základ, zvolený prístup, implementačné detaily, problémy s~ktorými som sa stretol a~ich riešenia. Kapitola je členená chronologicky podľa postupu vývoja projektu.
+Táto kapitola detailne popisuje implementáciu jednotlivých komponentov systému LoRaWAN GPS Tracking. Pri každej časti uvádzam teoretický základ, zvolený prístup, problémy s~ktorými som sa stretol a~ich riešenia. Kapitola je členená chronologicky podľa postupu vývoja projektu.
 
 %% ============================================================
 \section{Architektúra systému}
 \label{sec:Architektura}
 
-Pred samotnou implementáciou som navrhol celkovú architektúru systému, ktorá definuje tok dát od GPS trackerov až po webovú aplikáciu. Pochopenie tejto architektúry je kľúčové pre orientáciu v~nasledujúcich sekciách.
+Pred samotnou implementáciou som navrhol celkovú architektúru systému, ktorá definuje tok dát od GPS trackerov až po webovú aplikáciu.
 
 \subsection{Prehľad komponentov}
 \label{sec:PrehladKomponent}
 
-Systém pozostáva zo šiestich hlavných vrstiev, ktoré spolupracujú na zbere, spracovaní a~vizualizácii GPS dát:
+Systém pozostáva zo šiestich hlavných vrstiev:
 
 \begin{enumerate}
-    \item \textbf{End Devices (Trackery)} -- SenseCap T1000-B GPS trackery zbierajúce pozičné dáta
+    \item \textbf{End Devices} -- SenseCap T1000-B GPS trackery zbierajúce pozičné dáta
     \item \textbf{LoRaWAN Gateway} -- RAK7289 V2 most medzi rádiovými signálmi a~IP sieťou
     \item \textbf{MQTT Broker} -- mqtt.hedurio.com sprostredkúva správy medzi gateway a~backendom
     \item \textbf{Backend Server} -- Python/Flask aplikácia spracujúca dáta a~poskytujúca API
@@ -28,77 +28,32 @@ Systém pozostáva zo šiestich hlavných vrstiev, ktoré spolupracujú na zbere
 \subsection{Dátový tok}
 \label{sec:DatovyTok}
 
-Životný cyklus GPS správy prechádza nasledujúcimi fázami:
-
-\begin{enumerate}
-    \item Tracker získa GPS fix a~zostaví payload s~pozíciou, batériou a~metadátami
-    \item Payload je odoslaný cez LoRaWAN na frekvenčnom pásme EU868
-    \item Gateway prijme rádiovú správu a~preloží ju do IP paketu
-    \item Gateway publikuje dekódovaný JSON na MQTT topic
-    \item Backend (MQTT subscriber) prijme správu a~spustí parser
-    \item Parser validuje dáta a~extrahuje relevantné informácie
-    \item Dáta sú uložené do PostgreSQL databázy
-    \item WebSocket broadcastuje novú pozíciu všetkým pripojeným klientom
-    \item Frontend aktualizuje mapu a~UI v~reálnom čase
-\end{enumerate}
-
-Táto architektúra zabezpečuje latenciu pod 2~sekundy od získania GPS fixu po zobrazenie na mape, čo je pre live tracking kritické.
+Životný cyklus GPS správy prechádza nasledujúcimi fázami: tracker získa GPS fix a~zostaví payload, payload je odoslaný cez LoRaWAN na frekvenčnom pásme EU868, gateway prijme rádiovú správu a~publikuje dekódovaný JSON na MQTT topic, backend prijme správu a~spustí parser, dáta sú uložené do PostgreSQL a~WebSocket broadcastuje novú pozíciu všetkým pripojeným klientom. Táto architektúra zabezpečuje latenciu pod 2~sekundy od získania GPS fixu po zobrazenie na mape.
 
 
 %% ============================================================
 \section{Hardware Setup a~Konfigurácia}
 \label{sec:HardwareSetup}
 
-Prvou fázou projektu bola konfigurácia hardvérovej infraštruktúry -- LoRaWAN gateway a~GPS trackerov. Táto fáza vyžadovala pochopenie LoRaWAN protokolu, štúdium dokumentácií a~riešenie niekoľkých neočakávaných problémov.
+Prvou fázou projektu bola konfigurácia hardvérovej infraštruktúry. Táto fáza vyžadovala pochopenie LoRaWAN protokolu a~riešenie niekoľkých neočakávaných problémov.
 
-\subsection{Úvod do LoRaWAN}
+\subsection{LoRaWAN protokol}
 \label{sec:UvodLoRaWAN}
 
 LoRaWAN (Long Range Wide Area Network) je bezdrôtový komunikačný protokol navrhnutý pre IoT zariadenia s~nízkym energetickým odberom~\cite{lorawan_spec}. Na rozdiel od WiFi či Bluetooth, ktoré majú dosah desiatky metrov, LoRaWAN umožňuje komunikáciu na vzdialenosti až 15~kilometrov v~otvorenom teréne.
 
-Kľúčové charakteristiky LoRaWAN:
-\begin{itemize}
-    \item \textbf{Dlhý dosah} -- až 15~km v~Line of Sight podmienkach, 2-5~km v~mestskom prostredí
-    \item \textbf{Nízka spotreba} -- trackery vydržia na batérii dni až týždne
-    \item \textbf{Nízka dátová priepustnosť} -- vhodné pre malé payloady (GPS súradnice, telemetria)
-    \item \textbf{Nelicencované pásmo} -- EU868 v~Európe nevyžaduje licenciu
-\end{itemize}
-
-Pre tento projekt som zvolil LoRaWAN kvôli jeho dlhému dosahu a~nízkej spotrebe energie trackerov. Na celodenných eventoch nie je možné priebežné nabíjanie zariadení, takže energetická efektívnosť bola prioritou.
-
-Architektúra LoRaWAN pozostáva zo štyroch vrstiev:
-\begin{itemize}
-    \item \textbf{End Device} -- GPS tracker zbierajúci pozičné dáta
-    \item \textbf{Gateway} -- most medzi rádiovými signálmi a~IP sieťou
-    \item \textbf{Network Server} -- správa siete a~routovanie správ
-    \item \textbf{Application Server} -- spracovanie dát aplikáciou
-\end{itemize}
+Pre tento projekt som zvolil LoRaWAN z~niekoľkých dôvodov. Prvým bol dlhý dosah -- až 15~km v~Line of Sight podmienkach, 2-5~km v~mestskom prostredí. Druhým bola nízka spotreba energie -- trackery vydržia na batérii dni až týždne. Tretím dôvodom bolo nelicencované pásmo EU868, ktoré nevyžaduje licenciu pre prevádzku v~Európe. Na celodenných eventoch nie je možné priebežné nabíjanie zariadení, takže energetická efektívnosť bola prioritou.
 
 \subsection{Gateway RAK7289 V2}
 \label{sec:Gateway}
 
-Firma mi poskytla gateway RAK7289 V2 vo variante C2 s~integrovaným LTE modulom pre pripojenie do internetu. Varianta C2 je hardvérová konfigurácia so 4G konektivitou, čo eliminuje potrebu ethernet pripojenia a~umožňuje nasadenie kdekoľvek s~mobilným signálom.
+Firma mi poskytla gateway RAK7289 V2 vo variante C2 s~integrovaným LTE modulom. Varianta C2 je hardvérová konfigurácia so 4G konektivitou, čo eliminuje potrebu ethernet pripojenia a~umožňuje nasadenie kdekoľvek s~mobilným signálom.
 
 \subsubsection{Aktualizácia firmware}
 
 Prvým krokom bola aktualizácia firmware z~verzie 2.2.2 na aktuálnu 2.2.14. Mentor odporučil začať práve firmware updateom: \emph{``První věc co bych udělal je firmware update, asi tam bude hromada změn.''}
 
-Pred samotnou aktualizáciou som vytvoril zálohu konfigurácie pre prípad problémov. Proces aktualizácie zahŕňal:
-
-\begin{enumerate}
-    \item Stiahnutie firmware z~oficiálnej stránky RAK Wireless
-    \item Overenie kompatibility s~modelom RAK7289 V2 C2
-    \item Upload firmware cez webové rozhranie gateway
-    \item Čakanie na reštart zariadenia (približne 5~minút)
-    \item Verifikácia novej verzie v~admin paneli
-\end{enumerate}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.85\textwidth]{Figures/priebeh_aktualizacie_sw_na_brane.png}
-    \caption{Priebeh aktualizácie firmware gateway -- systém zobrazuje progress bar a~upozornenie aby sa gateway nevypínala}
-    \label{fig:firmware-upload}
-\end{figure}
+Proces aktualizácie zahŕňal stiahnutie firmware z~oficiálnej stránky RAK Wireless, overenie kompatibility s~modelom, upload cez webové rozhranie gateway a~čakanie na reštart zariadenia približne 5~minút.
 
 \begin{figure}[htbp]
     \centering
@@ -111,21 +66,12 @@ Nová verzia firmware priniesla opravy bezpečnostných chýb a~lepšiu stabilit
 
 \subsubsection{Konfigurácia siete}
 
-Po aktualizácii som nakonfiguroval gateway pre európsky región a~MQTT komunikáciu:
-
-\begin{itemize}
-    \item \textbf{Frekvenčný plán EU868} -- povinné pre prevádzku v~EÚ
-    \item \textbf{MQTT Bridge} -- odosielanie dekódovaných správ na broker \texttt{mqtt.hedurio.com}
-    \item \textbf{TLS šifrovanie} -- port 8883 s~certifikátovou autentifikáciou
-    \item \textbf{Network Server} -- integrovaný LoRaWAN Network Server pre správu zariadení
-\end{itemize}
+Po aktualizácii som nakonfiguroval gateway pre európsky región a~MQTT komunikáciu. Nastavil som frekvenčný plán EU868 povinný pre prevádzku v~EÚ, MQTT Bridge pre odosielanie dekódovaných správ na broker mqtt.hedurio.com, TLS šifrovanie na porte 8883 s~certifikátovou autentifikáciou a~integrovaný LoRaWAN Network Server pre správu zariadení.
 
 \subsection{SenseCap T1000-B Trackery}
 \label{sec:Trackery}
 
 Pre tracking osôb som používal trackery SenseCap T1000-B od firmy Seeed Studio~\cite{sensecap_datasheet}. Tieto kompaktné zariadenia kombinujú GPS, WiFi a~Bluetooth lokalizáciu s~LoRaWAN komunikáciou.
-
-\subsubsection{Špecifikácie trackera}
 
 \begin{table}[htbp]
     \centering
@@ -135,128 +81,49 @@ Pre tracking osôb som používal trackery SenseCap T1000-B od firmy Seeed Studi
         \hline
         \textbf{Parameter} & \textbf{Hodnota} \\
         \hline
-        Rozmery & 42.8 × 42.8 × 18.1 mm \\
+        Rozmery & 42.8 x 42.8 x 18.1 mm \\
         Hmotnosť & 32 g \\
         Batéria & 700 mAh Li-Po \\
         GPS presnosť & <10 m (outdoor) \\
         Komunikácia & LoRaWAN Class A \\
-        Certifikácia & IP65 (prachuvzdorný, odolný voči vode) \\
-        Prevádzková teplota & -20°C až +60°C \\
+        Certifikácia & IP65 \\
         \hline
     \end{tabular}
 \end{table}
 
-Firma poskytla aj cenové porovnanie rôznych verzií trackerov:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.7\textwidth]{Figures/porovnanie_cien_trackerov_mesh_vs_nase.png}
-    \caption{Cenové porovnanie trackerov T1000 -- B-čka za 882 Kč vs E-čka s~Meshtastic za 1232 Kč}
-    \label{fig:tracker-prices}
-\end{figure}
-
-Mentor spomenul aj alternatívu T1000-E s~Meshtastic podporou, ale pre účely tohto projektu som zostal pri B-verzii kvôli nižšej cene. Ako mentor vysvetlil: \emph{``Je to úplně jiný HW vevnitř.''}
-
-\subsubsection{OTAA registrácia}
-
-Registrácia trackerov prebiehala pomocou \textbf{OTAA} (Over-The-Air Activation) autentifikácie. OTAA je bezpečnejšia alternatíva k~ABP (Activation By Personalization), pretože session kľúče sú generované dynamicky pri každom pripojení.
-
-OTAA vyžaduje tri parametre:
-\begin{itemize}
-    \item \textbf{DevEUI} -- unikátny 64-bitový identifikátor zariadenia (výrobcom priradený)
-    \item \textbf{AppEUI} (JoinEUI) -- identifikátor aplikácie/join servera
-    \item \textbf{AppKey} -- 128-bitový šifrovací kľúč pre komunikáciu
-\end{itemize}
-
-Konfiguráciu trackerov som realizoval cez mobilnú aplikáciu SenseCraft, ktorá komunikuje s~trackerom pomocou Bluetooth. Proces registrácie:
-
-\begin{enumerate}
-    \item Vytvorenie aplikácie na gateway Network Server s~definovaným AppEUI
-    \item Pridanie trackera ako End Device s~DevEUI z~nálepky na zariadení
-    \item Nastavenie rovnakého AppEUI v~trackeri cez SenseCraft app
-    \item Čakanie na Join Request/Accept handshake
-\end{enumerate}
-
-Pri úspešnom pripojení tracker prehrá charakteristickú melódiu. Dokumentácia to popisuje ako \emph{``A quick and cheerful melody when the network is successfully joined''} -- či je to ``cheerful'' je diskutabilné, ale aspoň signalizuje úspech.
-
-\subsubsection{Konfigurácia parametrov}
-
-Pre vývojové účely som nastavil nasledujúce parametre:
-
-\begin{itemize}
-    \item \textbf{Work Mode} -- Periodic (pravidelné odosielanie)
-    \item \textbf{Uplink Interval} -- 5 minút (pre vývoj, produkčne 10-15 min)
-    \item \textbf{GPS Scan Timeout} -- 120 sekúnd (zvýšené z~default 60s)
-    \item \textbf{Heartbeat Interval} -- 60 minút
-\end{itemize}
-
-Zvýšenie GPS Scan Timeout na 120 sekúnd výrazne zlepšilo úspešnosť získania GPS fixu, hlavne pri cold start situáciách.
+Registrácia trackerov prebiehala pomocou OTAA (Over-The-Air Activation) autentifikácie. OTAA je bezpečnejšia alternatíva k~ABP (Activation By Personalization), pretože session kľúče sú generované dynamicky pri každom pripojení. OTAA vyžaduje tri parametre: DevEUI ako unikátny 64-bitový identifikátor zariadenia, AppEUI ako identifikátor aplikácie a~AppKey ako 128-bitový šifrovací kľúč.
 
 \subsection{Problémy a~riešenia}
 \label{sec:HWProblemy}
 
-Počas konfigurácie hardvéru som narazil na niekoľko problémov, ktoré vyžadovali hlbšie štúdium dokumentácií a~diskusných fór.
+Počas konfigurácie hardvéru som narazil na niekoľko problémov.
 
-\subsubsection{GPS cold start}
+\textbf{GPS cold start:} Pri prvom zapnutí tracker posielal súradnice (0.0, 0.0), kým GPS modul nezískal fix. Toto je bežné správanie pri cold start -- GPS modul nemá uložené údaje o~satelitoch a~potrebuje čas na ich vyhľadanie. Riešením bolo filtrovanie nulových súradníc v~parseri.
 
-Pri prvom zapnutí tracker posielal súradnice (0.0, 0.0), kým GPS modul nezískal fix. Toto je bežné správanie pri ``cold start'' -- GPS modul nemá uložené údaje o~satelitoch a~potrebuje čas na ich vyhľadanie.
+\textbf{Firmware bug batérie:} Podľa diskusií na SenseCraft fóre niektoré trackery hlásili 100\% batérie aj keď boli takmer vybité. Implementoval som detekciu tejto anomálie -- ak tracker hlási 100\% batériu viac ako 24 hodín bez zmeny, systém ho označí ako podozrivý.
 
-Riešenie implementované v~parseri:
-\begin{lstlisting}[language=Python, caption={Filtrovanie cold start súradníc}]
-def validate_coordinates(lat: float, lon: float) -> bool:
-    """Validuje GPS suradnice - filtruje cold start a garbage values"""
-    if lat == 0.0 and lon == 0.0:
-        return False  # Cold start - tracker este nema GPS fix
-    if lat == 999.0 or lon == 999.0:
-        return False  # Garbage values
-    return -90 <= lat <= 90 and -180 <= lon <= 180
-\end{lstlisting}
-
-\subsubsection{Firmware bug batérie}
-
-Podľa diskusií na SenseCraft fóre niektoré trackery hlásili 100\% batérie aj keď boli takmer vybité. Tento firmware bug spôsobil na eventoch nepríjemné prekvapenia, keď sa trackery náhle vypli.
-
-Implementoval som detekciu tejto anomálie -- ak tracker hlási 100\% batériu viac ako 24 hodín bez zmeny, systém ho označí ako podozrivý.
-
-\subsubsection{GPS presnosť v~budovách}
-
-Presnosť GPS vnútri budov dosahovala len približne 300 metrov, čo mentor potvrdil: \emph{``GPS v~budově tady u~toho spíš nepůjde. A~když náhodou ano tak přesnost bude tak 300~m.''}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.6\textwidth]{Figures/rozsah_payloadu_vychádzajúceho_z_rovnakeho_miesta.png}
-    \caption{Vizualizácia GPS driftu v~budove -- červené čiary ukazujú rozptyl pozícií hoci tracker ležal na jednom mieste}
-    \label{fig:gps-indoor}
-\end{figure}
-
-Pre testovanie som preto pravidelne chodil von, kde presnosť bola pod 10 metrov. V~produkcii sa predpokladá outdoor použitie na eventoch, kde tento problém nie je relevantný.
+\textbf{GPS presnosť v~budovách:} Presnosť GPS vnútri budov dosahovala len približne 300 metrov, čo mentor potvrdil: \emph{``GPS v~budově tady u~toho spíš nepůjde. A~když náhodou ano tak přesnost bude tak 300~m.''}
 
 
 %% ============================================================
 \section{MQTT a~Parser}
 \label{sec:MQTTParser}
 
-Po úspešnej konfigurácii hardvéru som pristúpil k~implementácii softvérovej časti pre príjem a~spracovanie dát. Táto fáza zahŕňala pripojenie na MQTT broker, vývoj robustného parsera a~ošetrenie množstva edge cases.
+Po úspešnej konfigurácii hardvéru som pristúpil k~implementácii softvérovej časti pre príjem a~spracovanie dát.
 
 \subsection{MQTT Protokol}
 \label{sec:MQTTProtokol}
 
 MQTT (Message Queuing Telemetry Transport) je ľahký publish/subscribe protokol ideálny pre IoT aplikácie~\cite{mqtt_spec}. Na rozdiel od REST API, kde klient aktívne dopytuje server (polling), MQTT umožňuje serveru posielať dáta klientom okamžite po ich prijatí (push).
 
-Výhody MQTT pre tento projekt:
-\begin{itemize}
-    \item \textbf{Nízka latencia} -- správy doručené v~milisekundách
-    \item \textbf{Efektivita} -- minimálna hlavička protokolu (2 bajty)
-    \item \textbf{Spoľahlivosť} -- QoS úrovne garantujúce doručenie
-    \item \textbf{TLS podpora} -- šifrovaná komunikácia
-\end{itemize}
+Výhody MQTT pre tento projekt zahŕňali nízku latenciu s~doručením správ v~milisekundách, efektivitu s~minimálnou hlavičkou protokolu iba 2 bajty, spoľahlivosť vďaka QoS úrovniam garantujúcim doručenie a~TLS podporu pre šifrovanú komunikáciu.
 
 \subsection{Pripojenie na broker}
 \label{sec:BrokerPripojenie}
 
-Pre pripojenie na firemný broker \texttt{mqtt.hedurio.com} som použil Python knižnicu \texttt{paho-mqtt} s~TLS šifrovaním:
+Pre pripojenie na firemný broker mqtt.hedurio.com som použil Python knižnicu paho-mqtt s~TLS šifrovaním:
 
-\begin{lstlisting}[language=Python, caption={Kompletná inicializácia MQTT klienta s~TLS a~callback funkciami}]
+\begin{lstlisting}[language=Python, caption={Inicializácia MQTT klienta s~TLS}]
 import paho.mqtt.client as mqtt
 import ssl
 
@@ -264,7 +131,7 @@ class MQTTClient:
     def __init__(self, config):
         self.client = mqtt.Client(client_id=config.CLIENT_ID)
 
-        # TLS konfigurácia s certifikátmi
+        # TLS konfiguracia s certifikatmi
         self.client.tls_set(
             ca_certs=config.CA_CERT_PATH,
             certfile=config.CLIENT_CERT_PATH,
@@ -272,218 +139,58 @@ class MQTTClient:
             tls_version=ssl.PROTOCOL_TLS
         )
 
-        # Autentifikácia
+        # Autentifikacia
         self.client.username_pw_set(
-            config.MQTT_USERNAME,
-            config.MQTT_PASSWORD
-        )
+            config.MQTT_USERNAME, config.MQTT_PASSWORD)
 
         # Callback funkcie
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
-        self.client.on_disconnect = self._on_disconnect
-
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            logger.info("Connected to MQTT broker")
-            # Subscribe na topic s dekódovanými správami
-            client.subscribe("application/SENSECAP/decoded", qos=1)
-        else:
-            logger.error(f"Connection failed: {rc}")
-
-    def connect(self):
-        self.client.connect(
-            host="mqtt.hedurio.com",
-            port=8883,
-            keepalive=60
-        )
-        self.client.loop_start()
 \end{lstlisting}
 
-Po úspešnom pripojení sa klient prihlási na odber topicu \texttt{application/SENSECAP/decoded}, kde gateway publikuje dekódované správy z~trackerov vo formáte JSON.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.6\textwidth]{Figures/tracker_na_parapete.png}
-    \caption{Tracker položený na parapete okna -- miesto odkiaľ posielal prvé úspešné payloady s~GPS súradnicami}
-    \label{fig:tracker-location}
-\end{figure}
+Po úspešnom pripojení sa klient prihlási na odber topicu application/SENSECAP/decoded, kde gateway publikuje dekódované správy z~trackerov vo formáte JSON.
 
 \subsection{Parser SenseCap Payloadov}
 \label{sec:Parser}
 
-Správy z~trackerov prichádzajú vo formáte JSON s~vnorenou štruktúrou. GPS súradnice a~telemetria sú uložené v~poli \texttt{messages} s~unikátnymi measurement ID:
+Správy z~trackerov prichádzajú vo formáte JSON s~vnorenou štruktúrou. GPS súradnice a~telemetria sú uložené v~poli messages s~unikátnymi measurement ID. Latitude má ID 4198, longitude 4197 a~battery level 3000.
 
-\begin{table}[htbp]
-    \centering
-    \caption{Mapovanie measurement ID na typy dát}
-    \label{tab:measurement-ids}
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{ID} & \textbf{Typ dát} & \textbf{Jednotka} \\
-        \hline
-        4198 & Latitude & stupne (WGS84) \\
-        4197 & Longitude & stupne (WGS84) \\
-        3000 & Battery Level & percento \\
-        4175 & Temperature & °C \\
-        4190 & Light Intensity & lux \\
-        \hline
-    \end{tabular}
-\end{table}
-
-Implementácia parsera:
-
-\begin{lstlisting}[language=Python, caption={Extrakcia GPS súradníc a~telemetrie z~SenseCap payloadu}]
-class SenseCapParser:
-    MEASUREMENT_IDS = {
-        '4198': 'latitude',
-        '4197': 'longitude',
-        '3000': 'battery',
-        '4175': 'temperature',
-        '4190': 'light'
-    }
-
-    def parse_payload(self, payload: dict) -> Optional[dict]:
-        """Parsuje surový payload z MQTT a extrahuje GPS + telemetriu"""
-        try:
-            device_eui = payload.get('devEUI')
-            device_name = payload.get('deviceName', 'Unknown')
-            measurements = payload.get('messages', [])
-
-            # Extrakcia hodnôt podľa measurement ID
-            data = {}
-            for m in measurements:
-                mid = str(m.get('measurementId'))
-                value = m.get('measurementValue')
-
-                if mid in self.MEASUREMENT_IDS:
-                    data[self.MEASUREMENT_IDS[mid]] = value
-
-            # Validácia povinných polí
-            if not self._validate_gps(data):
-                return None
-
-            return {
-                'device_eui': device_eui,
-                'device_name': device_name,
-                'latitude': data['latitude'],
-                'longitude': data['longitude'],
-                'battery': data.get('battery'),
-                'temperature': data.get('temperature'),
-                'timestamp': datetime.utcnow()
-            }
-
-        except Exception as e:
-            logger.error(f"Parse error: {e}")
-            self.stats['parse_errors'] += 1
-            return None
+\begin{lstlisting}[language=Python, caption={Validácia GPS súradníc s~ošetrením edge cases}]
+def validate_coordinates(lat: float, lon: float) -> bool:
+    """Validuje GPS suradnice - filtruje cold start a garbage"""
+    # Cold start - tracker este nema GPS fix
+    if lat == 0.0 and lon == 0.0:
+        return False
+    # Garbage values z firmware
+    if lat == 999.0 or lon == 999.0:
+        return False
+    # Validny rozsah WGS84
+    return -90 <= lat <= 90 and -180 <= lon <= 180
 \end{lstlisting}
 
-\subsection{Validácie a~Edge Cases}
-\label{sec:Validace}
+\subsection{Edge Cases}
+\label{sec:EdgeCases}
 
 Počas vývoja som identifikoval množstvo edge cases, ktoré bolo potrebné ošetriť pre spoľahlivú prevádzku. Mentor ocenil tento prístup: \emph{``Cool, to jsou věci na které jsem ani nemyslel.''}
 
 \begin{table}[htbp]
     \centering
-    \caption{Edge cases identifikované počas vývoja a~ich riešenia}
+    \caption{Edge cases identifikované počas vývoja}
     \label{tab:edgecases}
-    \begin{tabular}{|p{3.5cm}|p{4cm}|p{4.5cm}|}
+    \begin{tabular}{|p{3cm}|p{4cm}|p{4.5cm}|}
         \hline
         \textbf{Edge Case} & \textbf{Príčina} & \textbf{Riešenie} \\
         \hline
-        GPS (0.0, 0.0) & Cold start, GPS modul bez fixu & Filtrovanie nulových súradníc \\
-        \hline
-        GPS (999, -999) & Garbage values z~firmware & Validácia rozsahu WGS84 \\
+        GPS (0.0, 0.0) & Cold start & Filtrovanie nulových súradníc \\
         \hline
         Battery 100\% stuck & Firmware bug & Detekcia >24h bez zmeny \\
         \hline
-        GPS drift 300m & Slabý signál v~budovách & Detekcia nereálnej rýchlosti \\
+        GPS drift 300m & Slabý signál & Detekcia nereálnej rýchlosti \\
         \hline
-        Corrupted JSON & Prenosové chyby & Try/except s~logovaním \\
-        \hline
-        Duplicitné správy & MQTT retry mechanizmus & Upsert namiesto INSERT \\
-        \hline
-        Device name ``none'' & Bug v~SenseCraft app & Fallback na DevEUI \\
-        \hline
-        Nekonzistentné timestamps & Server vs tracker čas & UTC normalizácia \\
+        Duplicitné správy & MQTT retry & Upsert namiesto INSERT \\
         \hline
     \end{tabular}
 \end{table}
-
-\begin{lstlisting}[language=Python, caption={Komplexná validácia GPS súradníc vrátane detekcie driftu}]
-def validate_gps_data(self, data: dict) -> bool:
-    """Komplexná validácia GPS dát vrátane edge cases"""
-    lat = data.get('latitude')
-    lon = data.get('longitude')
-
-    # Základná validácia prítomnosti
-    if lat is None or lon is None:
-        return False
-
-    # Cold start filtrovanie
-    if lat == 0.0 and lon == 0.0:
-        logger.debug("Filtered cold start coordinates")
-        return False
-
-    # Garbage values
-    if abs(lat) > 90 or abs(lon) > 180:
-        logger.warning(f"Invalid coordinates: {lat}, {lon}")
-        return False
-
-    # Detekcia nereálnej rýchlosti (>500 km/h)
-    if self._detect_gps_drift(data):
-        logger.warning("GPS drift detected, filtering")
-        return False
-
-    return True
-
-def _detect_gps_drift(self, data: dict) -> bool:
-    """Detekuje GPS drift porovnaním s predchádzajúcou pozíciou"""
-    device_eui = data.get('device_eui')
-    if device_eui not in self.last_positions:
-        return False
-
-    last = self.last_positions[device_eui]
-    distance = self._haversine_distance(
-        last['lat'], last['lon'],
-        data['latitude'], data['longitude']
-    )
-    time_diff = (data['timestamp'] - last['timestamp']).seconds
-
-    if time_diff > 0:
-        speed_kmh = (distance / time_diff) * 3600
-        if speed_kmh > 500:  # Nereálna rýchlosť
-            return True
-
-    return False
-\end{lstlisting}
-
-\subsection{Štatistiky parsera}
-\label{sec:ParserStats}
-
-Pre monitoring kvality dát som implementoval zbieranie štatistík:
-
-\begin{lstlisting}[language=Python, caption={Sledovanie štatistík parsera pre analýzu kvality dát}]
-class ParserStatistics:
-    def __init__(self):
-        self.stats = {
-            'total_messages': 0,
-            'successful_parses': 0,
-            'cold_start_filtered': 0,
-            'invalid_coordinates': 0,
-            'drift_detected': 0,
-            'json_errors': 0
-        }
-
-    def get_success_rate(self) -> float:
-        if self.stats['total_messages'] == 0:
-            return 0.0
-        return (self.stats['successful_parses'] /
-                self.stats['total_messages']) * 100
-\end{lstlisting}
-
-Po týždni testovania s~reálnymi trackermi parser vykazoval success rate približne 85\%, pričom väčšina odfiltrovaných správ boli cold start pozície pri zapnutí trackerov.
 
 
 %% ============================================================
@@ -497,116 +204,17 @@ Návrh databázovej vrstvy bol kritickou časťou projektu. Potreboval som efekt
 
 Po konzultácii s~mentorom som zvolil PostgreSQL 16~\cite{postgresql_docs} s~rozšíreniami TimescaleDB a~PostGIS. Mentor potvrdil správnosť voľby: \emph{``PostGIS a~TimescaleDB v~praktických záležitostech používáme celkem dost a~ušetří ti to strašně moc práce.''}
 
-\subsubsection{Prečo PostgreSQL}
+\textbf{Prečo TimescaleDB:} TimescaleDB~\cite{timescaledb_docs} je rozšírenie PostgreSQL optimalizované pre časové rady. GPS pozície sú klasickým príkladom -- každý záznam má timestamp a~postupne pribúdajú nové dáta. Výhodami sú hypertables s~automatickým rozdelením dát do chunks podľa času, kompresia až 95\% úspora miesta pre staršie dáta a~retention policies pre automatické mazanie starých dát.
 
-PostgreSQL som uprednostnil pred alternatívami z~nasledujúcich dôvodov:
-
-\begin{table}[htbp]
-    \centering
-    \caption{Porovnanie databázových riešení pre GPS tracking}
-    \label{tab:db-comparison}
-    \begin{tabular}{|l|c|c|c|c|}
-        \hline
-        \textbf{Kritérium} & \textbf{PostgreSQL} & \textbf{MySQL} & \textbf{MongoDB} & \textbf{InfluxDB} \\
-        \hline
-        Time-series podpora & TimescaleDB & - & - & Natívna \\
-        Geospatial & PostGIS & Limitovaná & GeoJSON & - \\
-        ACID transakcie & Áno & Áno & Čiastočne & - \\
-        SQL podpora & Plná & Plná & - & InfluxQL \\
-        Rozšíriteľnosť & Výborná & Limitovaná & - & - \\
-        \hline
-    \end{tabular}
-\end{table}
-
-\subsubsection{Prečo TimescaleDB}
-
-TimescaleDB~\cite{timescaledb_docs} je rozšírenie PostgreSQL optimalizované pre časové rady (time-series data). GPS pozície sú klasickým príkladom -- každý záznam má timestamp a~postupne pribúdajú nové dáta.
-
-Výhody TimescaleDB:
-\begin{itemize}
-    \item \textbf{Hypertables} -- automatické rozdelenie dát do chunks podľa času
-    \item \textbf{Kompresia} -- až 95\% úspora miesta pre staršie dáta
-    \item \textbf{Continuous aggregates} -- predpočítané agregácie
-    \item \textbf{Retention policies} -- automatické mazanie starých dát
-\end{itemize}
-
-\subsubsection{Prečo PostGIS}
-
-PostGIS~\cite{postgis_docs} rozširuje PostgreSQL o~geospatial funkcie. Namiesto ukladania súradníc do samostatných stĺpcov ako FLOAT, PostGIS umožňuje použiť natívny dátový typ \texttt{GEOGRAPHY}.
-
-\subsection{Docker Compose Setup}
-\label{sec:DockerSetup}
-
-Celé vývojové prostredie beží v~Docker Compose pre reprodukovateľnosť a~jednoduchú distribúciu:
-
-\begin{lstlisting}[language=bash, caption={Docker Compose konfigurácia pre databázovú vrstvu}]
-version: '3.8'
-
-services:
-  timescaledb:
-    image: timescale/timescaledb-ha:pg16
-    container_name: tracker-db
-    environment:
-      POSTGRES_DB: tracker_db
-      POSTGRES_USER: tracker_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tracker_user -d tracker_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: tracker-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@tracker.local
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    ports:
-      - "5050:80"
-    depends_on:
-      - timescaledb
-\end{lstlisting}
-
-Mentor odporučil tento prístup: \emph{``Za mě ideální výstup by byl, kdyby v~tom repo pak existoval docker-compose.yml který načte všechny ty secrets z~.env.''}
+\textbf{Prečo PostGIS:} PostGIS~\cite{postgis_docs} rozširuje PostgreSQL o~geospatial funkcie. Namiesto ukladania súradníc ako FLOAT poskytuje natívny dátový typ GEOGRAPHY, ktorý umožňuje efektívne priestorové dotazy ako ST\_Distance pre výpočet vzdialenosti a~ST\_Contains pre detekciu či bod leží v~polygóne.
 
 \subsection{Databázová schéma}
 \label{sec:Schema}
 
-Schéma databázy obsahuje 8 tabuliek prepojených foreign keys. Hlavné tabuľky:
-
-\begin{table}[htbp]
-    \centering
-    \caption{Prehľad databázových tabuliek}
-    \label{tab:tables}
-    \begin{tabular}{|l|p{5cm}|l|}
-        \hline
-        \textbf{Tabuľka} & \textbf{Účel} & \textbf{Typ} \\
-        \hline
-        devices & Zoznam trackerov a~ich metadáta & Regular \\
-        positions & GPS záznamy s~časovou pečiatkou & Hypertable \\
-        geofences & Virtuálne zóny (polygóny) & PostGIS \\
-        geofence\_events & História entry/exit udalostí & Regular \\
-        geofence\_state & Aktuálny stav zariadení v~zónach & Regular \\
-        device\_tags & Kategórie zariadení (security, staff) & Regular \\
-        poi & Body záujmu na mape & PostGIS \\
-        poi\_visits & História návštev POI & Regular \\
-        \hline
-    \end{tabular}
-\end{table}
-
-\subsection{TimescaleDB Hypertables}
-\label{sec:Hypertables}
-
-Tabuľka \texttt{positions} je konvertovaná na TimescaleDB hypertable s~týždňovými chunks:
+Schéma databázy obsahuje 8 tabuliek. Hlavné sú devices pre zoznam trackerov a~ich metadáta, positions ako TimescaleDB hypertable pre GPS záznamy, geofences pre virtuálne zóny uložené ako PostGIS polygóny a~poi pre body záujmu.
 
 \begin{lstlisting}[language=SQL, caption={Vytvorenie TimescaleDB hypertable pre GPS pozície}]
--- Vytvorenie základnej tabuľky
+-- Vytvorenie zakladnej tabulky
 CREATE TABLE positions (
     id BIGSERIAL,
     device_id INTEGER NOT NULL REFERENCES devices(id),
@@ -614,213 +222,52 @@ CREATE TABLE positions (
     longitude DOUBLE PRECISION NOT NULL,
     location GEOGRAPHY(POINT, 4326),
     battery INTEGER,
-    temperature REAL,
-    rssi INTEGER,
-    snr REAL,
     timestamp TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (id, timestamp)
 );
 
--- Konverzia na hypertable
-SELECT create_hypertable(
-    'positions',
-    'timestamp',
-    chunk_time_interval => INTERVAL '1 week',
-    if_not_exists => TRUE
-);
+-- Konverzia na hypertable s tyzdnovymi chunks
+SELECT create_hypertable('positions', 'timestamp',
+    chunk_time_interval => INTERVAL '1 week');
 
--- Automatická kompresia dát starších ako 7 dní
-ALTER TABLE positions SET (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'device_id',
-    timescaledb.compress_orderby = 'timestamp DESC'
-);
-
+-- Automaticka kompresia dat starsich ako 7 dni
 SELECT add_compression_policy('positions', INTERVAL '7 days');
-
--- Retention policy - mazanie dát starších ako 90 dní
-SELECT add_retention_policy('positions', INTERVAL '90 days');
 \end{lstlisting}
 
-Výhody hypertables:
-\begin{itemize}
-    \item Query na posledných 24 hodín prehľadá len 1 chunk namiesto celej tabuľky
-    \item Kompresia ušetrí až 90\% miesta pre historické dáta
-    \item Automatické mazanie starých dát bez manuálneho zásahu
-\end{itemize}
+\subsection{PostGIS Trigger}
+\label{sec:PostGISTrigger}
 
-\subsection{PostGIS Geospatial Funkcie}
-\label{sec:PostGISFunkcie}
+Pre automatické vytvorenie PostGIS POINT z~lat/lon súradníc som implementoval trigger:
 
-PostGIS poskytuje množstvo funkcií pre prácu s~geografickými dátami:
-
-\begin{lstlisting}[language=SQL, caption={PostGIS trigger pre automatické vytvorenie GEOGRAPHY z~lat/lon}]
--- Trigger pre automatické vytvorenie PostGIS POINT
+\begin{lstlisting}[language=SQL, caption={PostGIS trigger pre automatické vytvorenie GEOGRAPHY}]
 CREATE OR REPLACE FUNCTION populate_location()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.location := ST_SetSRID(
-        ST_MakePoint(NEW.longitude, NEW.latitude),
-        4326
+        ST_MakePoint(NEW.longitude, NEW.latitude), 4326
     )::geography;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_populate_location
-    BEFORE INSERT OR UPDATE ON positions
-    FOR EACH ROW
-    EXECUTE FUNCTION populate_location();
+    BEFORE INSERT ON positions
+    FOR EACH ROW EXECUTE FUNCTION populate_location();
 \end{lstlisting}
-
-\begin{lstlisting}[language=SQL, caption={PostGIS nearby search -- nájdenie zariadení v~okruhu}]
--- Nájdenie všetkých zariadení do 5 km od bodu
-CREATE OR REPLACE FUNCTION get_nearby_devices(
-    center_lat DOUBLE PRECISION,
-    center_lon DOUBLE PRECISION,
-    radius_meters INTEGER DEFAULT 5000
-)
-RETURNS TABLE (
-    device_id INTEGER,
-    device_name VARCHAR,
-    distance_meters DOUBLE PRECISION,
-    last_seen TIMESTAMPTZ
-) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        d.id,
-        d.name,
-        ST_Distance(
-            lp.location,
-            ST_SetSRID(ST_MakePoint(center_lon, center_lat), 4326)::geography
-        ) AS distance,
-        lp.timestamp
-    FROM devices d
-    JOIN LATERAL (
-        SELECT location, timestamp
-        FROM positions p
-        WHERE p.device_id = d.id
-        ORDER BY timestamp DESC
-        LIMIT 1
-    ) lp ON true
-    WHERE ST_DWithin(
-        lp.location,
-        ST_SetSRID(ST_MakePoint(center_lon, center_lat), 4326)::geography,
-        radius_meters
-    )
-    ORDER BY distance;
-END;
-$$ LANGUAGE plpgsql;
-\end{lstlisting}
-
-\subsection{Battery Draining Analýza}
-\label{sec:BatteryAnalyza}
-
-Počas vývoja som sledoval spotrebu batérie trackerov pri rôznych konfiguráciách:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/battery_drain_pred_zaciatkom_merania.png}
-    \caption{Stav batérie na začiatku testovania -- plne nabitý tracker pripravený na meranie}
-    \label{fig:battery-before}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/battery_drain_na_konci_merania.png}
-    \caption{Stav batérie po niekoľkých hodinách s~5-minútovým intervalom -- viditeľný pokles}
-    \label{fig:battery-after}
-\end{figure}
-
-Mentor komentoval: \emph{``No drain, ono to při 5~minutových intervalech dalo tak 2~dny max. Nejvíc žere ta GPS.''}
-
-Pre produkčné nasadenie odporúčam 10-15 minútový interval, čo predĺži výdrž na 4-5 dní.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.7\textwidth]{Figures/metrika_dosahu_lora_siete.png}
-    \caption{Dokumentácia LoRaWAN dosahu -- graf RSSI vs vzdialenosť z~oficiálnej dokumentácie}
-    \label{fig:lorawan-range}
-\end{figure}
 
 
 %% ============================================================
 \section{Backend API}
 \label{sec:BackendAPI}
 
-Backend tvorí jadro systému -- prijíma dáta z~MQTT, ukladá ich do databázy a~poskytuje API pre frontend. Implementoval som ho v~Python frameworku Flask s~dôrazom na modularitu a~testovateľnosť.
-
-\subsection{Štruktúra projektu}
-\label{sec:ProjektStruktura}
-
-\begin{lstlisting}[language=bash, caption={Adresárová štruktúra backend projektu}]
-backend/
-├── app.py                 # Hlavný Flask server (1,308 riadkov)
-├── config.py              # Konfigurácia a environment variables
-├── database/
-│   ├── __init__.py
-│   ├── connection.py      # Connection pooling
-│   ├── models.py          # Dátové modely
-│   └── queries.py         # SQL dotazy
-├── mqtt/
-│   ├── __init__.py
-│   ├── client.py          # MQTT subscriber
-│   └── parser.py          # SenseCap parser
-├── websocket/
-│   ├── __init__.py
-│   └── events.py          # Socket.IO handlers
-├── utils/
-│   └── validators.py      # Validačné funkcie
-└── requirements.txt
-\end{lstlisting}
+Backend tvorí jadro systému -- prijíma dáta z~MQTT, ukladá ich do databázy a~poskytuje API pre frontend.
 
 \subsection{Flask Framework}
 \label{sec:Flask}
 
-Flask~\cite{flask_docs} som zvolil pre jeho jednoduchosť a~flexibilitu. Na rozdiel od Django, Flask neimplementuje názorový prístup a~umožňuje vlastnú štruktúru projektu.
+Flask~\cite{flask_docs} som zvolil pre jeho jednoduchosť a~flexibilitu. Na rozdiel od Django, Flask neimplementuje názorový prístup a~umožňuje vlastnú štruktúru projektu. Pre malý až stredný projekt je ideálny.
 
-\begin{lstlisting}[language=Python, caption={Inicializácia Flask aplikácie s~rozšíreniami}]
-from flask import Flask
-from flask_cors import CORS
-from flask_socketio import SocketIO
-
-def create_app():
-    app = Flask(__name__)
-
-    # Konfigurácia z environment variables
-    app.config.from_object('config.Config')
-
-    # CORS pre frontend na inom porte
-    CORS(app, resources={
-        r"/api/*": {
-            "origins": app.config['ALLOWED_ORIGINS'],
-            "methods": ["GET", "POST", "PUT", "DELETE"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        }
-    })
-
-    # Socket.IO pre real-time
-    socketio = SocketIO(
-        app,
-        cors_allowed_origins=app.config['ALLOWED_ORIGINS'],
-        async_mode='threading'
-    )
-
-    # Registrácia blueprintov
-    from routes.trackers import trackers_bp
-    from routes.positions import positions_bp
-    from routes.geofences import geofences_bp
-    from routes.poi import poi_bp
-
-    app.register_blueprint(trackers_bp, url_prefix='/api')
-    app.register_blueprint(positions_bp, url_prefix='/api')
-    app.register_blueprint(geofences_bp, url_prefix='/api')
-    app.register_blueprint(poi_bp, url_prefix='/api')
-
-    return app, socketio
-\end{lstlisting}
+Backend je organizovaný do modulov: database pre connection pooling a~SQL dotazy, mqtt pre MQTT subscriber a~SenseCap parser, websocket pre Socket.IO handlery a~routes pre REST API endpointy.
 
 \subsection{REST API Design}
 \label{sec:RESTAPI}
@@ -833,107 +280,39 @@ API som navrhol podľa RESTful princípov s~konzistentným formátom odpovedí:
     \label{tab:endpoints}
     \begin{tabular}{|l|l|}
         \hline
-        \textbf{Metóda + Endpoint} & \textbf{Popis} \\
+        \textbf{Endpoint} & \textbf{Popis} \\
         \hline
         GET /api/trackers & Zoznam všetkých zariadení \\
-        GET /api/trackers/\{id\} & Detail zariadenia \\
-        PUT /api/trackers/\{id\} & Aktualizácia (meno, tag) \\
-        GET /api/positions/\{id\} & História pozícií zariadenia \\
         GET /api/positions/\{id\}/trail & GPS trail pre vizualizáciu \\
         GET /api/positions/\{id\}/heatmap & Agregované dáta pre heatmapu \\
         GET /api/geofences & Zoznam všetkých zón \\
         POST /api/geofences & Vytvorenie novej zóny \\
-        GET /api/geofences/\{id\}/devices & Zariadenia v~zóne \\
-        POST /api/poi & Vytvorenie POI \\
         GET /api/poi/nearby & Najbližšie POI od bodu \\
-        GET /api/stats/daily & Denné štatistiky \\
-        GET /api/stats/battery & Stav batérií všetkých zariadení \\
         \hline
     \end{tabular}
 \end{table}
-
-\subsection{Connection Pooling}
-\label{sec:ConnectionPooling}
-
-Pre efektívnu prácu s~databázou som použil connection pool z~knižnice \texttt{psycopg3}:
-
-\begin{lstlisting}[language=Python, caption={Implementácia connection poolu s~dict row factory}]
-from psycopg_pool import ConnectionPool
-from psycopg.rows import dict_row
-
-class DatabaseConnection:
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._init_pool()
-        return cls._instance
-
-    def _init_pool(self):
-        """Inicializácia connection poolu"""
-        self.pool = ConnectionPool(
-            conninfo=os.getenv('DATABASE_URL'),
-            min_size=2,      # Minimum 2 spojenia vždy ready
-            max_size=10,     # Maximum 10 paralelných spojení
-            timeout=30,      # Timeout pre získanie spojenia
-            kwargs={
-                'row_factory': dict_row  # Výsledky ako dict
-            }
-        )
-
-    def execute(self, query: str, params: tuple = None):
-        """Vykonanie query s automatickým connection managementom"""
-        with self.pool.connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(query, params)
-                if cur.description:
-                    return cur.fetchall()
-                conn.commit()
-                return cur.rowcount
-\end{lstlisting}
 
 \subsection{WebSocket Real-time}
 \label{sec:WebSocket}
 
 Pre real-time aktualizácie pozícií som integroval Flask-SocketIO~\cite{socketio_docs}:
 
-\begin{lstlisting}[language=Python, caption={WebSocket handler a broadcast funkcionalita}]
-from flask_socketio import SocketIO, emit, join_room
-
-socketio = SocketIO()
-
-@socketio.on('connect')
-def handle_connect():
-    """Handler pre nové WebSocket spojenie"""
-    logger.info(f"Client connected: {request.sid}")
-    # Odoslanie aktuálneho stavu všetkých trackerov
-    trackers = db.get_all_trackers_with_last_position()
-    emit('initial_state', {'trackers': trackers})
-
-@socketio.on('subscribe_tracker')
-def handle_subscribe(data):
-    """Prihlásenie na odber konkrétneho trackera"""
-    tracker_id = data.get('tracker_id')
-    join_room(f'tracker_{tracker_id}')
-
+\begin{lstlisting}[language=Python, caption={WebSocket broadcast novej pozície}]
 def broadcast_new_position(position_data: dict):
-    """Broadcast novej pozície všetkým pripojeným klientom"""
+    """Broadcast novej pozicie vsetkym klientom"""
     socketio.emit('new_position', {
         'device_id': position_data['device_id'],
-        'device_name': position_data['device_name'],
         'latitude': position_data['latitude'],
         'longitude': position_data['longitude'],
         'battery': position_data['battery'],
         'timestamp': position_data['timestamp'].isoformat()
     })
 
-    # Notifikácia pre geofence eventy
+    # Notifikacia pre geofence eventy
     if position_data.get('geofence_event'):
         socketio.emit('geofence_alert', {
             'type': position_data['geofence_event']['type'],
-            'zone_name': position_data['geofence_event']['zone_name'],
-            'device_name': position_data['device_name']
+            'zone_name': position_data['geofence_event']['zone_name']
         })
 \end{lstlisting}
 
@@ -942,61 +321,25 @@ def broadcast_new_position(position_data: dict):
 \section{Frontend}
 \label{sec:Frontend}
 
-Frontend je vizuálna časť systému, ktorú používateľ priamo ovláda. Implementoval som ho ako Single Page Application (SPA) v~React s~dôrazom na používateľský zážitok a~responzivitu.
+Frontend je vizuálna časť systému, ktorú používateľ priamo ovláda. Implementoval som ho ako Single Page Application v~React s~dôrazom na používateľský zážitok.
 
 \subsection{Technologický Stack}
 \label{sec:FrontendStack}
 
-\begin{itemize}
-    \item \textbf{React 19}~\cite{react_docs} -- komponentový framework
-    \item \textbf{Vite} -- build nástroj s~hot module replacement
-    \item \textbf{Tailwind CSS} -- utility-first CSS framework
-    \item \textbf{Leaflet.js}~\cite{leaflet_docs} -- open-source mapová knižnica
-    \item \textbf{Socket.IO Client} -- real-time komunikácia
-\end{itemize}
+Zvolil som React 19~\cite{react_docs} ako komponentový framework, Vite ako build nástroj s~hot module replacement, Tailwind CSS pre utility-first štýlovanie a~Leaflet.js~\cite{leaflet_docs} ako open-source mapovú knižnicu.
 
-Leaflet som uprednostnil pred Google Maps kvôli:
-\begin{itemize}
-    \item Absencii API limitov a~poplatkov
-    \item Jednoduchšej integrácii s~React
-    \item Open-source licencii
-    \item Možnosti použitia vlastných tile serverov
-\end{itemize}
+Leaflet som uprednostnil pred Google Maps kvôli absencii API limitov a~poplatkov, jednoduchšej integrácii s~React a~open-source licencii.
 
-\subsection{Štruktúra komponentov}
-\label{sec:KomponentStruktura}
+\subsection{Tri módy aplikácie}
+\label{sec:Mody}
 
-Aplikácia obsahuje 13 React komponentov organizovaných do logických skupín:
+Aplikácia podporuje tri režimy zobrazenia:
 
-\begin{lstlisting}[language=bash, caption={Adresárová štruktúra frontend komponentov}]
-src/
-├── components/
-│   ├── Map/
-│   │   ├── MapView.jsx        # Hlavný mapový komponent
-│   │   ├── TrackerMarker.jsx  # Marker pre tracker
-│   │   ├── TrailLayer.jsx     # GPS trail vizualizácia
-│   │   └── HeatmapLayer.jsx   # Heatmapa hustoty
-│   ├── Sidebar/
-│   │   ├── TrackerList.jsx    # Zoznam zariadení
-│   │   ├── TrackerDetail.jsx  # Detail s telemetriou
-│   │   └── FilterPanel.jsx    # Filtrovanie zariadení
-│   ├── Geofencing/
-│   │   ├── ZoneDrawer.jsx     # Kreslenie polygónov
-│   │   ├── ZoneManager.jsx    # Správa zón
-│   │   └── AlertPanel.jsx     # Notifikácie
-│   └── Timeline/
-│       ├── TimelineSlider.jsx # Časový posuvník
-│       └── DateRangePicker.jsx # Výber rozsahu
-├── hooks/
-│   ├── useWebSocket.js        # WebSocket connection
-│   └── useTrackers.js         # State management
-└── App.jsx
-\end{lstlisting}
+\textbf{LIVE Mode:} Zobrazuje aktuálne pozície všetkých trackerov v~reálnom čase. WebSocket prijíma nové pozície a~okamžite aktualizuje markery na mape s~plynulou animáciou prechodu.
 
-\subsection{Hlavné rozhranie}
-\label{sec:HlavneRozhranie}
+\textbf{HISTORICAL Mode:} Umožňuje prehliadanie histórie pohybu pomocou časového slidera. Implementoval som dva typy vizualizácie -- trail zobrazujúci trasu pohybu a~heatmapu zobrazujúcu hustotu pohybu.
 
-Hlavné rozhranie aplikácie pozostáva z~mapového komponentu a~bočných panelov so zoznamom zariadení a~detailmi:
+\textbf{GEOFENCING Mode:} Správa virtuálnych zón -- detailne popísané v~sekcii~\ref{sec:GeofencingPOI}.
 
 \begin{figure}[htbp]
     \centering
@@ -1007,108 +350,12 @@ Hlavné rozhranie aplikácie pozostáva z~mapového komponentu a~bočných panel
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{Figures/prava_lava_lišta_vysunuta.png}
-    \caption{Rozhranie s~oboma bočnými panelmi vysunutými -- viditeľné ACTIVE DEVICES, SYSTEM STATS a~POINTS OF INTEREST sekcie}
-    \label{fig:fe-sidebars}
-\end{figure}
-
-\subsection{Tri módy aplikácie}
-\label{sec:Mody}
-
-Aplikácia podporuje tri režimy zobrazenia, medzi ktorými používateľ prepína pomocou záložiek v~hornej časti:
-
-\subsubsection{LIVE Mode}
-
-Zobrazuje aktuálne pozície všetkých trackerov v~reálnom čase. WebSocket prijíma nové pozície a~okamžite aktualizuje markery na mape s~plynulou animáciou prechodu.
-
-Implementované funkcie:
-\begin{itemize}
-    \item Automatické centrovanie na tracker pri príchode payloadu
-    \item Animácia markera pri zmene pozície
-    \item Farebné rozlíšenie podľa stavu batérie (zelená/žltá/červená)
-    \item Sortovanie trackerov podľa najnovšej aktivity
-\end{itemize}
-
-\begin{lstlisting}[language=JavaScript, caption={WebSocket handler pre real-time update pozícií}]
-const useWebSocket = (url) => {
-  const [trackers, setTrackers] = useState({});
-
-  useEffect(() => {
-    const socket = io(url);
-
-    socket.on('new_position', (data) => {
-      setTrackers(prev => ({
-        ...prev,
-        [data.device_id]: {
-          ...prev[data.device_id],
-          latitude: data.latitude,
-          longitude: data.longitude,
-          battery: data.battery,
-          lastSeen: data.timestamp
-        }
-      }));
-    });
-
-    socket.on('geofence_alert', (alert) => {
-      showToast(`${alert.device_name} ${alert.type} ${alert.zone_name}`);
-    });
-
-    return () => socket.disconnect();
-  }, [url]);
-
-  return trackers;
-};
-\end{lstlisting}
-
-\subsubsection{HISTORICAL Mode}
-
-Umožňuje prehliadanie histórie pohybu pomocou časového slidera. Implementoval som dva typy vizualizácie:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/historical_model_prvotna_verzia.png}
-    \caption{Historical mode -- prvotná verzia s~trail vizualizáciou zobrazujúcou trasu pohybu}
-    \label{fig:fe-trail}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
     \includegraphics[width=0.95\textwidth]{Figures/heat_mapa_v_historical_mode.png}
     \caption{Historical mode -- heatmapa zobrazujúca hustotu pohybu, červené oblasti indikujú miesta s~najväčšou koncentráciou pozícií}
     \label{fig:fe-heatmap}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/rozsah_okno_pre_prehravanie_v_historical_mode.png}
-    \caption{Timeline picker -- výber časového rozsahu s~predefinovanými možnosťami (Last 24h, Last 7 days) a~custom range}
-    \label{fig:timeline-picker}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/from_to_okno_v_historical_mode.png}
-    \caption{Custom date range picker -- iOS-style výber presného rozsahu dátumov pre historické prehľady}
-    \label{fig:date-range}
-\end{figure}
-
 Mentor bol prekvapený kvalitou heatmapy: \emph{``Jsem myslel že ta heatmapa bude nic moc, ale vypadá to fakt dobře.''}
-
-\subsubsection{GEOFENCING Mode}
-
-Správa virtuálnych zón -- detailne popísané v~sekcii~\ref{sec:GeofencingPOI}.
-
-\subsection{Nearby Search}
-\label{sec:NearbySearch}
-
-Funkcia pre nájdenie zariadení v~definovanom okruhu využíva PostGIS na backende:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/filtrovanie_trackerov_v_rangi_vzdialenosti.png}
-    \caption{Nearby search -- filtrovanie zariadení podľa vzdialenosti od vybraného bodu s~nastaviteľným rádiusom}
-    \label{fig:nearby-search}
-\end{figure}
 
 \subsection{Reakcia mentora}
 \label{sec:FrontendReakcia}
@@ -1120,156 +367,45 @@ Reakcia mentora na frontend bola veľmi pozitívna: \emph{``Tvl to je úplně sk
 \section{Geofencing a~POI}
 \label{sec:GeofencingPOI}
 
-Geofencing je jednou z~najhodnotnejších funkcionalít systému pre praktické nasadenie na eventoch. Umožňuje definovať virtuálne zóny a~automaticky detekovať pohyb zariadení.
+Geofencing je jednou z~najhodnotnejších funkcionalít systému pre praktické nasadenie na eventoch.
 
 \subsection{Koncept Geofencing}
 \label{sec:GeofencingKoncept}
 
-Geofencing je technika vytvárania virtuálnych geografických zón a~automatickej detekcie, keď zariadenie do zóny vstúpi alebo ju opustí. Pre eventy má široké využitie:
+Geofencing je technika vytvárania virtuálnych geografických zón a~automatickej detekcie, keď zariadenie do zóny vstúpi alebo ju opustí. Pre eventy má široké využitie: detekcia vstupu do backstage area len pre authorized personál, monitorovanie pohybu security personálu, štatistiky návštevnosti jednotlivých zón a~alerting pri opustení definovaného perimetra.
 
-\begin{itemize}
-    \item Detekcia vstupu do backstage area (len authorized personál)
-    \item Monitorovanie pohybu security personálu
-    \item Štatistiky návštevnosti jednotlivých zón (stage, bar, toalety)
-    \item Alerting pri opustení definovaného perimetra
-\end{itemize}
+\subsection{Implementácia}
+\label{sec:GeofencingImpl}
 
-\subsection{Polygon Drawing}
-\label{sec:PolygonDrawing}
-
-Pre kreslenie zón som implementoval intuitívne rozhranie inšpirované kresl'acími aplikáciami:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/zony_prvotná_verzia.png}
-    \caption{Geofencing rozhranie -- ľavý panel zobrazuje aktívne zóny s~počtom zariadení vnútri/vonku, pravý panel obsahuje nástroje pre správu zón}
-    \label{fig:geo-zones-v1}
-\end{figure}
+Pre kreslenie zón som implementoval intuitívne rozhranie. Proces vytvorenia zóny zahŕňa kliknutie na Draw New Zone, pridávanie bodov polygónu kliknutím na mapu, uzavretie polygónu dvojklikom a~vyplnenie formulára pre názov, farbu a~popis zóny.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{Figures/zony_novsia_verzia.png}
-    \caption{Vylepšená verzia geofencing rozhrania s~prepracovaným dizajnom a~lepšou čitateľnosťou}
-    \label{fig:geo-zones-v2}
+    \caption{Geofencing rozhranie -- ľavý panel zobrazuje aktívne zóny s~počtom zariadení, pravý panel obsahuje nástroje pre správu}
+    \label{fig:geo-zones}
 \end{figure}
 
-Proces vytvorenia zóny:
-\begin{enumerate}
-    \item Kliknutie na ``Draw New Zone'' aktivuje kreslenie
-    \item Kliknutím na mapu sa pridávajú body polygónu
-    \item Dvojklikom alebo kliknutím na prvý bod sa uzavrie polygón
-    \item Formulár pre názov, farbu a~popis zóny
-    \item Uloženie do databázy ako PostGIS polygon
-\end{enumerate}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/editacia_vlastnosti_zon_prvotna_verzia.png}
-    \caption{Editácia vlastností zóny -- možnosť zmeny názvu, farby a~popisu existujúcej geofence}
-    \label{fig:geo-edit}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/mazanie_zony.png}
-    \caption{Mazanie zóny s~potvrdením -- ochrana pred náhodným zmazaním}
-    \label{fig:geo-delete}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/priklad_dalsej_zony.png}
-    \caption{Príklad ďalšej geofence zóny -- možnosť vytvárania viacerých prekrývajúcich sa oblastí}
-    \label{fig:geo-example}
-\end{figure}
-
-\subsection{Entry/Exit Detekcia}
-\label{sec:EntryExitDetekcia}
-
-Pri každej novej pozícii backend kontroluje, či zariadenie vstúpilo alebo opustilo niektorú zónu:
-
-\begin{lstlisting}[language=Python, caption={Detekcia geofence eventov pomocou PostGIS}]
-def check_geofence_events(device_id: int, new_position: dict):
-    """Kontrola entry/exit pre všetky zóny"""
-
-    # Získanie aktuálneho stavu
-    current_zones = db.get_device_current_zones(device_id)
-
-    # Kontrola či je nová pozícia v nejakej zóne
-    new_zones = db.execute("""
-        SELECT g.id, g.name
-        FROM geofences g
-        WHERE ST_Contains(
-            g.polygon::geometry,
-            ST_SetSRID(ST_MakePoint(%s, %s), 4326)
-        )
-    """, (new_position['longitude'], new_position['latitude']))
-
-    new_zone_ids = {z['id'] for z in new_zones}
-    current_zone_ids = {z['id'] for z in current_zones}
-
-    # Detekcia ENTRY (nové zóny)
-    for zone_id in new_zone_ids - current_zone_ids:
-        zone = next(z for z in new_zones if z['id'] == zone_id)
-        create_geofence_event(device_id, zone_id, 'ENTRY')
-        broadcast_geofence_alert('ENTRY', zone['name'], device_id)
-
-    # Detekcia EXIT (opustené zóny)
-    for zone_id in current_zone_ids - new_zone_ids:
-        zone = next(z for z in current_zones if z['id'] == zone_id)
-        create_geofence_event(device_id, zone_id, 'EXIT')
-        broadcast_geofence_alert('EXIT', zone['name'], device_id)
-
-    # Update aktuálneho stavu
-    db.update_device_zones(device_id, list(new_zone_ids))
-\end{lstlisting}
+Pri každej novej pozícii backend kontroluje, či zariadenie vstúpilo alebo opustilo niektorú zónu pomocou PostGIS funkcie ST\_Contains. Ak sa stav zmení, vytvorí sa geofence event a~WebSocket odošle alert všetkým pripojeným klientom.
 
 \subsection{Points of Interest}
 \label{sec:POI}
 
-POI (Points of Interest) sú významné body na mape -- stage, bar, first aid, toalety:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/point_of_interest_lava_lista.png}
-    \caption{Ľavý panel s~POINTS OF INTEREST sekciou -- zobrazuje Food Court, Main Stage a~VIP Zone s~ich rádiusmi}
-    \label{fig:poi-list}
-\end{figure}
+POI (Points of Interest) sú významné body na mape -- stage, bar, first aid, toalety. Každý POI má definovaný rádius a~systém sleduje počet návštev a~aktuálny počet zariadení v~okolí.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{Figures/statistika_v_point_of_interest.png}
-    \caption{Štatistiky POI -- Main Stage zobrazuje Total Visits a~aktuálny počet Inside Now, s~možnosťou View on Map}
+    \caption{Štatistiky POI -- Main Stage zobrazuje Total Visits a~aktuálny počet Inside Now}
     \label{fig:poi-stats}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/historical_mode_s_poi_on.png}
-    \caption{Historical mode s~aktivovanými POI -- zobrazuje heatmapu spolu s~bodmi záujmu}
-    \label{fig:poi-historical}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/editacia_point_of_interest.png}
-    \caption{Editácia Point of Interest -- možnosť zmeny názvu, popisu a~rádiusu}
-    \label{fig:poi-edit}
 \end{figure}
 
 Mentor reagoval pozitívne: \emph{``To je hodně cool!''}
 
-\subsection{Device Tags/Roles}
+\subsection{Device Tags}
 \label{sec:DeviceTags}
 
-Pre organizáciu trackerov som implementoval systém tagov:
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/pridanie_tagov.png}
-    \caption{Pridanie tagu k~zariadeniu -- input field s~autocomplete a~Add tlačidlom pre rýchle kategorizovanie}
-    \label{fig:tags-add}
-\end{figure}
+Pre organizáciu trackerov som implementoval systém tagov. Zariadenia je možné kategorizovať napríklad ako security, staff alebo VIP. Filtrovanie podľa tagov umožňuje rýchle zobrazenie len relevantných zariadení.
 
 \begin{figure}[htbp]
     \centering
@@ -1283,98 +419,19 @@ Pre organizáciu trackerov som implementoval systém tagov:
 \section{DevOps a~Infraštruktúra}
 \label{sec:DevOps}
 
-Pre produkčné nasadenie a~jednoduchý development som implementoval kontajnerizované prostredie s~dôrazom na bezpečnosť.
+Pre produkčné nasadenie a~jednoduchý development som implementoval kontajnerizované prostredie.
 
 \subsection{Docker Compose Setup}
 \label{sec:DockerComposeSetup}
 
-Kompletné vývojové prostredie beží v~Docker Compose:
+Kompletné vývojové prostredie beží v~Docker Compose s~4 službami: timescaledb pre databázu s~PostGIS, backend pre Flask aplikáciu, frontend pre React a~pgadmin pre správu databázy.
 
-\begin{lstlisting}[language=bash, caption={Kompletný docker-compose.yml pre všetky služby}]
-version: '3.8'
-
-services:
-  timescaledb:
-    image: timescale/timescaledb-ha:pg16
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  backend:
-    build: ./backend
-    environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@timescaledb:5432/${DB_NAME}
-      MQTT_BROKER: ${MQTT_BROKER}
-      MQTT_PORT: ${MQTT_PORT}
-      SECRET_KEY: ${SECRET_KEY}
-    ports:
-      - "5000:5000"
-    depends_on:
-      timescaledb:
-        condition: service_healthy
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    ports:
-      - "5050:80"
-
-volumes:
-  postgres_data:
-\end{lstlisting}
-
-\subsection{Environment Variables}
-\label{sec:EnvVariables}
-
-Pre bezpečnosť sú všetky citlivé údaje v~\texttt{.env} súbore:
-
-\begin{lstlisting}[language=bash, caption={.env.example -- šablóna pre konfiguráciu bez citlivých údajov}]
-# Database
-DB_NAME=tracker_db
-DB_USER=tracker_user
-DB_PASSWORD=your_secure_password
-
-# MQTT
-MQTT_BROKER=mqtt.hedurio.com
-MQTT_PORT=8883
-MQTT_USERNAME=your_username
-MQTT_PASSWORD=your_password
-
-# Flask
-SECRET_KEY=your_flask_secret_key
-ALLOWED_ORIGINS=http://localhost:3000
-
-# pgAdmin
-PGADMIN_EMAIL=admin@tracker.local
-PGADMIN_PASSWORD=your_pgadmin_password
-\end{lstlisting}
+Mentor odporučil tento prístup: \emph{``Za mě ideální výstup by byl, kdyby v~tom repo pak existoval docker-compose.yml který načte všechny ty secrets z~.env.''}
 
 \subsection{Bezpečnostné opatrenia}
 \label{sec:Bezpecnost}
 
-Implementoval som niekoľko bezpečnostných opatrení:
-
-\begin{itemize}
-    \item \textbf{TLS} -- šifrovaná MQTT komunikácia na porte 8883
-    \item \textbf{Parameterized queries} -- ochrana pred SQL injection
-    \item \textbf{CORS} -- povolené len konkrétne origins
-    \item \textbf{Environment variables} -- žiadne hardcoded credentials
-    \item \textbf{Input validation} -- validácia všetkých vstupov z~API
-\end{itemize}
+Implementoval som niekoľko bezpečnostných opatrení: TLS pre šifrovanú MQTT komunikáciu na porte 8883, parameterized queries pre ochranu pred SQL injection, CORS s~povolenými len konkrétnymi origins, environment variables bez hardcoded credentials a~input validation pre validáciu všetkých vstupov z~API.
 
 
 %% ============================================================
@@ -1386,61 +443,12 @@ Testovanie prebiehalo kontinuálne počas celého vývoja -- od unit testov pars
 \subsection{GPS Simulátor}
 \label{sec:Simulator}
 
-Pre vývoj bez fyzických trackerov som vytvoril GPS simulátor:
-
-\begin{lstlisting}[language=Python, caption={GPS simulátor generujúci realistické testovacie dáta}]
-import random
-import math
-import time
-
-class GPSSimulator:
-    def __init__(self, base_lat: float, base_lon: float):
-        self.current_lat = base_lat
-        self.current_lon = base_lon
-
-    def generate_next_position(self, speed_kmh: float = 5):
-        """Generuje ďalšiu pozíciu simulujúcu pohyb"""
-        # Náhodný smer pohybu
-        angle = random.uniform(0, 2 * math.pi)
-
-        # Vzdialenosť za 1 sekundu pri danej rýchlosti
-        distance_m = (speed_kmh * 1000) / 3600
-
-        # Prepočet na stupne
-        delta_lat = (distance_m / 111000) * math.cos(angle)
-        delta_lon = (distance_m / (111000 * math.cos(
-            math.radians(self.current_lat)))) * math.sin(angle)
-
-        self.current_lat += delta_lat
-        self.current_lon += delta_lon
-
-        return {
-            'latitude': self.current_lat,
-            'longitude': self.current_lon,
-            'battery': random.randint(20, 100),
-            'timestamp': datetime.utcnow()
-        }
-
-    def simulate_route(self, waypoints: list, interval_sec: int = 5):
-        """Simuluje pohyb po definovanej trase"""
-        for waypoint in waypoints:
-            while self._distance_to(waypoint) > 10:
-                self._move_towards(waypoint)
-                yield self.get_current_position()
-                time.sleep(interval_sec)
-\end{lstlisting}
+Pre vývoj bez fyzických trackerov som vytvoril GPS simulátor, ktorý generuje realistické testovacie dáta. Simulátor umožňuje definovať východziu pozíciu, rýchlosť pohybu a~generuje náhodné trajektórie. Toto výrazne urýchlilo vývoj, pretože som nemusel čakať na reálne payloady z~trackerov.
 
 \subsection{Real-world Testing}
 \label{sec:RealTesting}
 
-Okrem simulátora som systém testoval s~reálnymi trackermi v~teréne. Testy odhalili:
-
-\begin{itemize}
-    \item Presnosť GPS v~budovách je výrazne horšia (až 300m)
-    \item Batéria vydrží približne 2-3 dni pri 5-minútovom intervale
-    \item LoRaWAN dosah je v~mestskom prostredí cca 2-3 km
-    \item Cold start GPS trvá 30-120 sekúnd
-\end{itemize}
+Okrem simulátora som systém testoval s~reálnymi trackermi v~teréne. Testy odhalili, že presnosť GPS v~budovách je výrazne horšia až 300m, batéria vydrží približne 2-3 dni pri 5-minútovom intervale, LoRaWAN dosah je v~mestskom prostredí cca 2-3 km a~cold start GPS trvá 30-120 sekúnd.
 
 Mentor potvrdil reálne parametre dosahu: \emph{``To můžu potvrdit, mám 10 km v~LoS.''}
 
