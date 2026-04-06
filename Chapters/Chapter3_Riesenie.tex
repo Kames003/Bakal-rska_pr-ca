@@ -167,6 +167,13 @@ Proces aktualizácie som realizoval nasledovne:
 
 Nová verzia firmware priniesla niekoľko dôležitých vylepšení vrátane opráv stability MQTT integrácie, ktoré sa neskôr ukázali ako kritické pre spoľahlivý príjem dát.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Figures/aktualizacia_sw_na_brane.png}
+    \caption{Úspešne aktualizovaný firmware gateway na verziu WisGateOS\_2.2.14\_RAK}
+    \label{fig:firmware-success}
+\end{figure}
+
 \subsubsection{Konfigurácia LoRaWAN a~MQTT}
 
 Po aktualizácii firmware som pristúpil ku konfigurácii samotného LoRaWAN stacku a~prepojenia s~MQTT brokerom. Gateway RAK7289 obsahuje integrovaný LoRaWAN Network Server, čo zjednodušuje nasadenie -- nie je potrebný externý Network Server ako The Things Network alebo ChirpStack.
@@ -182,13 +189,6 @@ Konfigurácia zahŕňala nasledujúce kroky:
 
     \item \textbf{Packet Forwarder} -- Nastavenie parametrov pre optimálny príjem LoRaWAN paketov vrátane spreading faktorov a~bandwidth.
 \end{itemize}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.85\textwidth]{Figures/aktualizacia_sw_na_brane.png}
-    \caption{Úspešne aktualizovaný firmware gateway na verziu WisGateOS\_2.2.14\_RAK}
-    \label{fig:firmware-success}
-\end{figure}
 
 \subsection{SenseCap T1000-B Trackery}
 \label{sec:Trackery}
