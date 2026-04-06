@@ -1,67 +1,242 @@
-\chapter{Postup riešenia zadaných úloh}
+\chapter{Zvolený postup řešení zadaných úkolů}
 \label{sec:Riesenie}
 
-% TODO: Napísať detailný popis riešenia (15-25 strán)
-% Podľa zadania: bod 3 - zvolený postup riešenia
-% Toto je JADRO práce - najdlhšia kapitola
+% Rozsah: 25-30 strán (JADRO PRÁCE)
+% Štruktúra pre každú podkapitolu:
+% 1. Kontext - prečo bola úloha potrebná
+% 2. Teoretický základ - vysvetlenie technológie (s citáciou)
+% 3. Analýza - ako som k úlohe pristúpil
+% 4. Implementácia - čo som urobil (kód, konfigurácia)
+% 5. Problémy a riešenia - čo nefungovalo a ako som to vyriešil
+% 6. Výsledok - čo som dosiahol
 
-Táto kapitola detailne popisuje postup riešenia jednotlivých zadaných úloh.
 
-% ============================================
-\section{Úloha 1: Názov}
-\label{sec:ukol1}
+%% ============================================================
+\section{Hardware Setup a Konfigurácia}
+\label{sec:HardwareSetup}
+% Rozsah: 3-4 strany
 
-\subsection{Zadanie a ciele}
-% Čo bolo cieľom úlohy?
+\subsection{Úvod do LoRaWAN}
+\label{sec:UvodLoRaWAN}
+% Čo je LoRaWAN, výhody, architektúra
+% Porovnanie s WiFi, Bluetooth, Sigfox
+% TODO: Doplniť obsah
 
-\subsection{Analýza problému}
-% Ako ste problém analyzovali?
+\subsection{Gateway RAK7289 V2}
+\label{sec:Gateway}
+% Technické parametre, firmware update
+% Konfigurácia LoRaWAN parametrov (EU868)
+% Pripojenie na MQTT broker
+% TODO: Doplniť obsah
 
-\subsection{Návrh riešenia}
-% Aký bol navrhnutý postup?
+\subsection{SenseCap T1000-B Trackery}
+\label{sec:Trackery}
+% Technické parametre, OTAA konfigurácia
+% Cenové porovnanie modelov A/B/E
+% TODO: Doplniť obsah
+
+\subsection{Problémy a riešenia}
+\label{sec:HWProblemy}
+% Firmware bug, GPS cold start
+% TODO: Doplniť obsah
+
+
+%% ============================================================
+\section{MQTT a Parser}
+\label{sec:MQTTParser}
+% Rozsah: 4-5 strán
+
+\subsection{MQTT Protokol}
+\label{sec:MQTTProtokol}
+% Čo je MQTT, Publish/Subscribe model
+% QoS úrovne, TLS šifrovanie
+% TODO: Doplniť obsah
+
+\subsection{Implementácia MQTT klienta}
+\label{sec:MQTTKlient}
+% Python paho-mqtt, TLS konfigurácia
+% Topic subscription, callback funkcie
+% TODO: Doplniť obsah + ukážka kódu
+
+\subsection{Parser SenseCap Payloadov}
+\label{sec:Parser}
+% Formát správy, Measurement IDs
+% Extrakcia GPS súradníc
+% TODO: Doplniť obsah + ukážka kódu
+
+\subsection{Validácie a Edge Cases}
+\label{sec:Validacie}
+% GPS validácia, Cold start filtering
+% Battery validácia, Corrupted payload
+% TODO: Doplniť obsah + ukážka kódu
+
+
+%% ============================================================
+\section{Databáza}
+\label{sec:Databaza}
+% Rozsah: 4-5 strán
+
+\subsection{PostgreSQL a Docker}
+\label{sec:PostgreSQL}
+% Prečo PostgreSQL, Docker Compose setup
+% TODO: Doplniť obsah + ukážka konfigurácie
+
+\subsection{TimescaleDB}
+\label{sec:TimescaleDB}
+% Časové rady, Hypertables
+% Chunk time interval, Compression policy
+% TODO: Doplniť obsah + ukážka SQL
+
+\subsection{PostGIS}
+\label{sec:PostGIS}
+% Geospatial rozšírenie
+% ST_DWithin, ST_Contains, ST_Distance
+% TODO: Doplniť obsah + ukážka SQL
+
+\subsection{Schéma databázy}
+\label{sec:Schema}
+% Prehľad tabuliek (8), triggery, indexy
+% TODO: Doplniť obsah + ER diagram
+
+
+%% ============================================================
+\section{Backend API}
+\label{sec:BackendAPI}
+% Rozsah: 4-5 strán
+
+\subsection{Flask Framework}
+\label{sec:Flask}
+% Prečo Flask, štruktúra projektu
+% Konfigurácia, Flask-CORS
+% TODO: Doplniť obsah
+
+\subsection{REST API Design}
+\label{sec:RESTAPI}
+% RESTful princípy
+% Endpointy: Trackers, Positions, Geofencing
+% TODO: Doplniť obsah + tabuľky endpointov
+
+\subsection{Connection Pooling}
+\label{sec:ConnectionPooling}
+% psycopg3 connection pool
+% TODO: Doplniť obsah + ukážka kódu
+
+\subsection{WebSocket Real-time}
+\label{sec:WebSocket}
+% Flask-SocketIO, Events
+% Broadcast pattern
+% TODO: Doplniť obsah + ukážka kódu
+
+\subsection{Upsert Pattern}
+\label{sec:Upsert}
+% PostgreSQL ON CONFLICT
+% TODO: Doplniť obsah + ukážka kódu
+
+
+%% ============================================================
+\section{Frontend}
+\label{sec:Frontend}
+% Rozsah: 5-6 strán
+
+\subsection{React a Vite}
+\label{sec:React}
+% Prečo React, Vite, Tailwind CSS
+% Štruktúra projektu
+% TODO: Doplniť obsah
+
+\subsection{Leaflet.js Mapa}
+\label{sec:Leaflet}
+% Prečo Leaflet, OpenStreetMap
+% Markers, Polylines, Polygons
+% TODO: Doplniť obsah
+
+\subsection{Komponenty aplikácie}
+\label{sec:Komponenty}
+% Tabuľka 13 komponentov
+% TODO: Doplniť obsah + tabuľka
+
+\subsection{Tri Módy Aplikácie}
+\label{sec:Mody}
+
+\subsubsection{LIVE Mode}
+\label{sec:LiveMode}
+% Real-time tracking, WebSocket, animácie
+% TODO: Doplniť obsah + screenshot
+
+\subsubsection{HISTORICAL Mode}
+\label{sec:HistoricalMode}
+% Timeline slider, Trail, Heatmap
+% TODO: Doplniť obsah + ukážka kódu + screenshoty
+
+\subsubsection{GEOFENCING Mode}
+\label{sec:GeofencingMode}
+% Kreslenie polygónov, CRUD, alerts
+% TODO: Doplniť obsah + screenshot
+
+\subsection{State Management}
+\label{sec:StateManagement}
+% React hooks, WebSocket handlers
+% TODO: Doplniť obsah + ukážka kódu
+
+
+%% ============================================================
+\section{Geofencing a POI}
+\label{sec:GeofencingPOI}
+% Rozsah: 3-4 strany
+
+\subsection{Geofencing Koncept}
+\label{sec:GeofencingKoncept}
+% Čo je geofencing, use cases
+% Event typy: Entry, Exit, Dwell
+% TODO: Doplniť obsah
 
 \subsection{Implementácia}
-% Ako ste riešenie implementovali?
-% Ukážky kódu, screenshoty, diagramy
+\label{sec:GeofencingImplementacia}
+% PostGIS polygon, ST_Contains
+% Trigger-based event generation
+% TODO: Doplniť obsah + ukážka SQL
 
-% Príklad vloženia kódu:
-% \begin{lstlisting}[label=src:example1, caption={Popis kódu}]
-% // váš kód tu
-% \end{lstlisting}
+\subsection{Alert Systém}
+\label{sec:AlertSystem}
+% WebSocket broadcast, toast notifikácie
+% TODO: Doplniť obsah + ukážka kódu
 
-% Príklad vloženia obrázka:
-% \begin{figure}[htbp]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{Figures/screenshot.png}
-%     \caption{Popis obrázka}
-%     \label{fig:example1}
-% \end{figure}
+\subsection{Points of Interest}
+\label{sec:POI}
+% Definícia POI, Nearby search
+% TODO: Doplniť obsah
 
-\subsection{Testovanie}
-% Ako ste riešenie testovali?
+\subsection{Analytika}
+\label{sec:Analytika}
+% Štatistiky, počet vstupov/výstupov
+% TODO: Doplniť obsah
 
-\subsection{Výsledky a zhodnotenie}
-% Aký bol výsledok? Čo sa podarilo/nepodarilo?
 
-% ============================================
-\section{Úloha 2: Názov}
-\label{sec:ukol2}
+%% ============================================================
+\section{DevOps a Infraštruktúra}
+\label{sec:DevOps}
+% Rozsah: 2-3 strany
 
-% Rovnaká štruktúra ako Úloha 1
+\subsection{Docker Compose}
+\label{sec:DockerCompose}
+% Multi-container orchestrácia
+% Services, Volumes, Networks
+% TODO: Doplniť obsah + ukážka konfigurácie
 
-\subsection{Zadanie a ciele}
+\subsection{Bezpečnosť}
+\label{sec:Bezpecnost}
+% TLS, Parameterized queries, CORS
+% Environment variables
+% TODO: Doplniť obsah + tabuľka
 
-\subsection{Analýza problému}
+\subsection{Performance}
+\label{sec:Performance}
+% Connection pooling, indexy, compression
+% TODO: Doplniť obsah
 
-\subsection{Návrh riešenia}
-
-\subsection{Implementácia}
-
-\subsection{Testovanie}
-
-\subsection{Výsledky a zhodnotenie}
-
-% ============================================
-% Pridať ďalšie sekcie pre ďalšie úlohy...
+\subsection{Edge Cases a Fixes}
+\label{sec:EdgeCases}
+% Race conditions, Memory leaks
+% TODO: Doplniť obsah
 
 \endinput

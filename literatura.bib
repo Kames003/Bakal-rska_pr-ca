@@ -1,31 +1,135 @@
-% Bibliografia pre bakalársku prácu
-% Formát: BibLaTeX (ISO 690)
+% ============================================================
+% BIBLIOGRAFIA - LoRaWAN GPS Tracking System
+% Formát: BibLaTeX / ISO 690
+% ============================================================
 
-% Príklad knihy:
-% @book{autor2024,
-%   author    = {Priezvisko, Meno},
-%   title     = {Názov knihy},
-%   publisher = {Vydavateľstvo},
-%   year      = {2024},
-%   address   = {Mesto},
-%   isbn      = {978-XX-XXXX-XXX-X}
-% }
+% === OFICIÁLNE DOKUMENTÁCIE ===
 
-% Príklad článku:
-% @article{autor2024article,
-%   author  = {Priezvisko, Meno},
-%   title   = {Názov článku},
-%   journal = {Názov časopisu},
-%   year    = {2024},
-%   volume  = {1},
-%   number  = {2},
-%   pages   = {10--20}
-% }
+@online{flask_docs,
+    author = {{Pallets Projects}},
+    title = {Flask Documentation},
+    url = {https://flask.palletsprojects.com/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
 
-% Príklad online zdroja:
-% @online{web2024,
-%   author  = {Autor alebo Organizácia},
-%   title   = {Názov stránky},
-%   url     = {https://example.com},
-%   urldate = {2024-01-01}
-% }
+@online{postgresql_docs,
+    author = {{The PostgreSQL Global Development Group}},
+    title = {PostgreSQL 16 Documentation},
+    url = {https://www.postgresql.org/docs/16/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{timescaledb_docs,
+    author = {{Timescale, Inc.}},
+    title = {TimescaleDB Documentation},
+    url = {https://docs.timescale.com/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{postgis_docs,
+    author = {{PostGIS Project Steering Committee}},
+    title = {PostGIS Documentation},
+    url = {https://postgis.net/documentation/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{react_docs,
+    author = {{Meta Platforms, Inc.}},
+    title = {React Documentation},
+    url = {https://react.dev/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{leaflet_docs,
+    author = {Agafonkin, Volodymyr},
+    title = {Leaflet - An Open-Source JavaScript Library for Interactive Maps},
+    url = {https://leafletjs.com/reference.html},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{socketio_docs,
+    author = {{Socket.IO}},
+    title = {Socket.IO Documentation},
+    url = {https://socket.io/docs/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{docker_docs,
+    author = {{Docker, Inc.}},
+    title = {Docker Documentation},
+    url = {https://docs.docker.com/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+
+% === TECHNICKÉ ŠPECIFIKÁCIE ===
+
+@manual{lorawan_spec,
+    author = {{LoRa Alliance}},
+    title = {LoRaWAN Specification v1.0.4},
+    organization = {LoRa Alliance},
+    year = {2020},
+    url = {https://lora-alliance.org/resource_hub/lorawan-specification-v1-0-4/}
+}
+
+@techreport{mqtt_spec,
+    author = {{OASIS}},
+    title = {MQTT Version 5.0 - OASIS Standard},
+    institution = {OASIS Open},
+    year = {2019},
+    url = {https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html}
+}
+
+@manual{sensecap_datasheet,
+    author = {{Seeed Studio}},
+    title = {SenseCap T1000 Tracker Datasheet},
+    organization = {Seeed Technology Co., Ltd.},
+    year = {2023},
+    url = {https://wiki.seeedstudio.com/sensecap_t1000_tracker/}
+}
+
+
+% === ŠTATISTIKY A ČLÁNKY ===
+
+@online{statista_iot,
+    author = {{Statista Research Department}},
+    title = {Number of Internet of Things (IoT) connected devices worldwide from 2019 to 2030},
+    url = {https://www.statista.com/statistics/1183457/iot-connected-devices-worldwide/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@book{iot_principles,
+    author = {Buyya, Rajkumar and Dastjerdi, Amir Vahid},
+    title = {Internet of Things: Principles and Paradigms},
+    publisher = {Morgan Kaufmann},
+    year = {2016},
+    isbn = {978-0128053959}
+}
+
+
+% === POMOCNÉ ZDROJE ===
+
+@online{paho_mqtt,
+    author = {{Eclipse Foundation}},
+    title = {Eclipse Paho MQTT Python Client},
+    url = {https://pypi.org/project/paho-mqtt/},
+    urldate = {2026-03-15},
+    year = {2024}
+}
+
+@online{psycopg3_docs,
+    author = {Di Gregorio, Federico},
+    title = {Psycopg 3 Documentation},
+    url = {https://www.psycopg.org/psycopg3/docs/},
+    urldate = {2026-03-15},
+    year = {2024}
+}

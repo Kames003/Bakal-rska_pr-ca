@@ -12,61 +12,103 @@
 % === METADATA ===
 \ThesisAuthor{Tomáš Mucha}
 \ThesisSupervisor{Ing. Pavel Dohnálek, Ph.D.}
-\CzechThesisTitle{Absolvovanie individuálnej odbornej praxe}
+\CzechThesisTitle{Absolvování individuální odborné praxe}
 \EnglishThesisTitle{Individual Professional Practice in the Company}
 \SubmissionYear{2026}
 \ThesisAssignmentFileName{ZadaniePrace.pdf}
 
 % === POĎAKOVANIE ===
-\Acknowledgement{Rád by som poďakoval vedúcemu práce Ing. Pavlovi Dohnálkovi, Ph.D. za odborné vedenie. Ďalej ďakujem konzultantovi Bc. Janovi Mitorajovi a celému tímu spoločnosti Railsformers s.r.o. za príležitosť vykonať odbornú prax a za cenné skúsenosti.}
+\Acknowledgement{Rád by som na tomto mieste poďakoval svojmu konzultantovi Bc. Janovi Mitorajovi za odborné vedenie, trpezlivosť a cenné rady počas celej praxe. Ďakujem tiež firme Railsformers s.r.o. za možnosť pracovať na zaujímavom projekte a získať praktické skúsenosti v oblasti IoT a full-stack vývoja.}
 
-% === ABSTRAKT SK ===
-\CzechAbstract{Táto bakalárska práca popisuje priebeh individuálnej odbornej praxe v spoločnosti Railsformers s.r.o. Práca obsahuje popis firmy a pracovného zaradenia študenta, zoznam zadaných úloh s ich časovou náročnosťou a zvolený postup riešenia. Ďalej sú popísané teoretické a praktické znalosti získané počas štúdia, ktoré boli uplatnené v praxi, a tiež znalosti, ktoré študentovi chýbali. V závere sú zhrnuté dosiahnuté výsledky a celkové zhodnotenie praxe.}
+% === ABSTRAKTY ===
+\CzechAbstract{Táto bakalárska práca dokumentuje priebeh odbornej praxe vo firme Railsformers s.r.o., kde som pracoval na vývoji GPS tracking systému založeného na technológii LoRaWAN. Práca popisuje návrh a implementáciu kompletného riešenia zahŕňajúceho konfiguráciu hardvéru (gateway RAK7289, trackery SenseCap T1000-B), vývoj Python backendu s Flask frameworkom, návrh databázy s PostgreSQL, TimescaleDB a PostGIS, a vytvorenie React frontendu s interaktívnou mapou. Systém umožňuje real-time sledovanie pozícií, zobrazenie histórie pohybu s heatmapami a geofencing s automatickými notifikáciami. Práca reflektuje využité znalosti zo štúdia a identifikuje oblasti, v ktorých bolo potrebné získať nové zručnosti.}
 
-\CzechKeywords{odborná prax; Railsformers; vývoj softvéru}
+\CzechKeywords{LoRaWAN; GPS tracking; IoT; PostgreSQL; TimescaleDB; PostGIS; Flask; React; MQTT; geofencing; real-time systémy}
 
-% === ABSTRAKT EN ===
-\EnglishAbstract{This bachelor thesis describes the course of individual professional practice at Railsformers s.r.o. The thesis contains a description of the company and the student's job position, a list of assigned tasks with their time requirements, and the chosen approach to solving them. Furthermore, the theoretical and practical knowledge gained during studies that was applied in practice is described, as well as the knowledge that the student lacked. The conclusion summarizes the achieved results and overall evaluation of the practice.}
+\EnglishAbstract{This bachelor thesis documents the professional internship at Railsformers s.r.o., where I worked on developing a GPS tracking system based on LoRaWAN technology. The thesis describes the design and implementation of a complete solution including hardware configuration (RAK7289 gateway, SenseCap T1000-B trackers), Python backend development with Flask framework, database design with PostgreSQL, TimescaleDB and PostGIS, and React frontend with interactive map. The system enables real-time position tracking, historical movement display with heatmaps, and geofencing with automatic notifications. The thesis reflects the knowledge applied from studies and identifies areas where new skills needed to be acquired.}
 
-\EnglishKeywords{professional practice; Railsformers; software development}
+\EnglishKeywords{LoRaWAN; GPS tracking; IoT; PostgreSQL; TimescaleDB; PostGIS; Flask; React; MQTT; geofencing; real-time systems}
 
 % === SKRATKY ===
-% Doplniť podľa použitých technológií
-% \AddAcronym{API}{Application Programming Interface}
-% \AddAcronym{REST}{Representational State Transfer}
-% \AddAcronym{SQL}{Structured Query Language}
+\AddAcronym{API}{Application Programming Interface}
+\AddAcronym{CORS}{Cross-Origin Resource Sharing}
+\AddAcronym{CRUD}{Create, Read, Update, Delete}
+\AddAcronym{CSS}{Cascading Style Sheets}
+\AddAcronym{GPS}{Global Positioning System}
+\AddAcronym{HTML}{HyperText Markup Language}
+\AddAcronym{HTTP}{HyperText Transfer Protocol}
+\AddAcronym{IoT}{Internet of Things}
+\AddAcronym{JSON}{JavaScript Object Notation}
+\AddAcronym{LoRaWAN}{Long Range Wide Area Network}
+\AddAcronym{MQTT}{Message Queuing Telemetry Transport}
+\AddAcronym{OTAA}{Over-The-Air Activation}
+\AddAcronym{POI}{Point of Interest}
+\AddAcronym{REST}{Representational State Transfer}
+\AddAcronym{RSSI}{Received Signal Strength Indicator}
+\AddAcronym{SNR}{Signal-to-Noise Ratio}
+\AddAcronym{SQL}{Structured Query Language}
+\AddAcronym{TLS}{Transport Layer Security}
+\AddAcronym{UI}{User Interface}
 
-% === LITERATÚRA ===
+% === BIBLIOGRAFIA ===
 \addbibresource{literatura.bib}
 
+% Nový typ stĺpca pre tabuľky
 \newcolumntype{d}[1]{D{,}{,}{#1}}
 
-% === DOKUMENT ===
+
+% ============================================================
+% ZAČIATOK DOKUMENTU
+% ============================================================
 \begin{document}
 
+% Titulné strany
 \MakeTitlePages
 
-% Zoznamy (odkomentovať až budú obrázky/tabuľky)
+% Zoznamy (odkomentovať keď budú obrázky/tabuľky)
 %\listoffigures
 %\clearpage
 %\listoftables
 %\clearpage
 
-% === KAPITOLY ===
+% ============================================================
+% HLAVNÝ TEXT
+% ============================================================
+
+% Úvod
 \input{Chapters/Introduction.tex}
+
+% Kapitola 1: Popis firmy a pracovného zaradenia
 \input{Chapters/Chapter1_Firma.tex}
+
+% Kapitola 2: Zoznam zadaných úloh
 \input{Chapters/Chapter2_Ulohy.tex}
+
+% Kapitola 3: Postup riešenia (JADRO PRÁCE)
 \input{Chapters/Chapter3_Riesenie.tex}
+
+% Kapitola 4: Uplatnené znalosti zo štúdia
 \input{Chapters/Chapter4_Znalosti.tex}
+
+% Kapitola 5: Chýbajúce znalosti
 \input{Chapters/Chapter5_Chybajuce.tex}
+
+% Kapitola 6: Dosiahnuté výsledky
 \input{Chapters/Chapter6_Vysledky.tex}
+
+% Záver
 \input{Chapters/Conclusion.tex}
 
-% === LITERATÚRA ===
-\printbibliography[title={Literatúra}, heading=bibintoc]
+% ============================================================
+% BIBLIOGRAFIA
+% ============================================================
+\printbibliography[title={Literatura}, heading=bibintoc]
 
-% === PRÍLOHY ===
-% \appendix
-% \input{Chapters/Appendix1.tex}
+% ============================================================
+% PRÍLOHY
+% ============================================================
+\appendix
+\input{Chapters/Appendix1.tex}
+\input{Chapters/Appendix2.tex}
 
 \end{document}
