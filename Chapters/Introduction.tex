@@ -2,31 +2,34 @@
 \label{sec:Uvod}
 
 % Zdroje použité pre túto kapitolu:
-% - writing_guide.md (štruktúra - Úvod má byť 1-2 strany)
-% - updates_structured.md Fáza 1 (motivácia)
+% - writing_guide.md (štruktúra - Úvod 1-2 strany)
+% - updates_structured.md Fáza 1 (motivácia, fascinujúci data flow)
 % - thesis_structure.md (obsah)
 % - zameranie_praxe.md (pôvodná pozícia DevOps)
+% - project_analysis.md (technický prehľad)
 
 %% MOTIVÁCIA PRE VÝBER PRAXE %%
 
-Pôvodne som sa na odbornú prax vo firme Railsformers~s.r.o. hlásil na pozíciu DevOps špecialistu s~náplňou zahŕňajúcou migráciu projektu do cloudu Azure a~vylepšovanie CI/CD pipeline. Po úvodných konzultáciách s~mentorom sa však naskytla príležitosť pracovať na projekte, ktorý prirodzene kombinoval DevOps aspekty (Docker Compose orchestrácia, kontajnerizácia služieb) s~full-stack vývojom (Python backend, React frontend, návrh databázy). Táto kombinácia ma zaujala viac než čisto infraštruktúrna práca, a~preto som ponuku prijal.
+Pôvodne som sa na odbornú prax vo firme Railsformers~s.r.o. hlásil na pozíciu DevOps špecialistu. Náplňou mala byť migrácia stredne veľkého projektu z~privátneho cloudu do verejného Azure, príprava obrazov kontajnerov v~Dockeri a~úpravy CI/CD pipeline v~GitLabe. Po úvodných konzultáciách s~mentorom sa však naskytla príležitosť pracovať na projekte, ktorý prirodzene kombinoval DevOps aspekty (Docker Compose orchestrácia, kontajnerizácia služieb, správa infraštruktúry) s~full-stack vývojom (Python backend, React frontend, návrh databázy). Táto kombinácia ma zaujala výrazne viac než čisto infraštruktúrna práca, a~preto som ponuku prijal.
 
-Projekt zameraný na IoT sledovací systém pokrýval celé spektrum moderného softvérového vývoja -- od práce s~hardvérom a~IoT protokolmi, cez návrh databázovej architektúry, až po tvorbu interaktívneho webového rozhrania. Motiváciou bola aj príležitosť pracovať s~technológiami ako LoRaWAN, MQTT alebo TimescaleDB, ktoré nemajú široké zastúpenie v~bežnej výuke, ale sú v~praxi čoraz častejšie využívané.
+Projekt zameraný na IoT sledovací systém ma nadchol svojou robustnosťou a~rozsahlosťou. Pokrýval celé spektrum moderného softvérového vývoja -- od práce s~hardvérom a~IoT protokolmi, cez sieťové protokoly a~backend architektúru, až po real-time spracovanie dát a~ich vizualizáciu. Fascinoval ma najmä dátový tok v~samotnej štruktúre systému: malé GPS trackery zbierajú pozičné dáta a~odosielajú ich cez LoRaWAN komunikáciu s~dosahom až 15~kilometrov na gateway, ktorá slúži ako most medzi rádiovými signálmi a~IP sieťou. Odtiaľ dáta putujú cez MQTT broker do backendu, kde sa parsujú, validujú a~ukladajú do databázy, aby ich následne frontend zobrazil na interaktívnej mape v~reálnom čase.
+
+Ďalšou významnou motiváciou bola príležitosť pracovať s~technológiami, ktoré nemajú široké zastúpenie v~bežnej výuke, ale sú v~praxi čoraz častejšie využívané. Technológia LoRaWAN pre bezdrôtovú komunikáciu na dlhé vzdialenosti, protokol MQTT pre IoT messaging alebo špecializované databázové rozšírenia TimescaleDB a~PostGIS predstavovali pre mňa atraktívnu výzvu na rozšírenie znalostí. Nemenej dôležitým faktorom bola možnosť pracovať na projekte s~reálnou komerčnou hodnotou -- sledovací systém pre eventy má praktické využitie v~oblasti bezpečnosti, logistiky a~organizácie akcií.
 
 %% KONTEXT A PROBLEMATIKA IoT %%
 
-Internet vecí (IoT) predstavuje jedno z~najdynamickejšie rastúcich odvetví informačných technológií~\cite{statista_iot}. V~kontexte sledovacích systémov pre osoby hrá kľúčovú úlohu technológia LoRaWAN, ktorá na rozdiel od Wi-Fi či Bluetooth umožňuje komunikáciu až na vzdialenosť približne 15~kilometrov pri zachovaní nízkej spotreby energie~\cite{lorawan_spec}. To ju robí ideálnou pre pokrytie rozsiahlych oblastí ako festivalové areály či skladové komplexy.
+Internet vecí (IoT -- Internet of Things) predstavuje jedno z~najdynamickejšie rastúcich odvetví informačných technológií. Podľa odhadov spoločnosti Statista dosiahne počet pripojených IoT zariadení do roku 2030 viac než 29~miliárd kusov celosvetovo~\cite{statista_iot}. V~kontexte sledovacích systémov pre osoby hrá kľúčovú úlohu technológia LoRaWAN (Long Range Wide Area Network), ktorá na rozdiel od Wi-Fi či Bluetooth umožňuje komunikáciu až na vzdialenosť približne 15~kilometrov pri zachovaní nízkej spotreby energie~\cite{lorawan_spec}. To ju robí ideálnou pre pokrytie rozsiahlych oblastí ako festivalové areály, skladové komplexy alebo mestské štvrte bez potreby budovať hustú sieť prístupových bodov.
 
 %% CIELE PRÁCE %%
 
-Hlavným cieľom práce bolo navrhnúť a~implementovať GPS tracking systém postavený na technológii LoRaWAN, ktorý umožní real-time sledovanie osôb vybavených GPS trackermi. Systém mal spracovávať dáta z~trackerov SenseCap T1000-B, ukladať ich do databázy optimalizovanej pre časové rady a~zobrazovať v~interaktívnej webovej aplikácii. Čiastkovými cieľmi boli návrh databázovej schémy s~využitím TimescaleDB a~PostGIS, implementácia REST~API s~WebSocket komunikáciou pre real-time aktualizácie, a~funkcionalita geofencingu s~automatickými upozorneniami.
+Hlavným cieľom práce bolo navrhnúť a~implementovať GPS tracking systém postavený na technológii LoRaWAN, ktorý umožní real-time sledovanie osôb vybavených GPS trackermi. Systém mal spracovávať dáta z~trackerov SenseCap T1000-B komunikujúcich cez LoRaWAN gateway, ukladať ich do databázy optimalizovanej pre časové rady a~zobrazovať v~interaktívnej webovej aplikácii. Medzi čiastkové ciele patrilo zabezpečenie spoľahlivého príjmu a~parsovania dát z~trackerov, návrh škálovateľnej databázovej schémy s~využitím rozšírení PostgreSQL (TimescaleDB pre časové rady, PostGIS pre priestorové dotazy), implementácia REST~API s~WebSocket komunikáciou pre real-time aktualizácie, a~funkcionalita geofencingu s~automatickými upozorneniami pri vstupe alebo výstupe sledovaných osôb z~definovaných zón.
 
 %% PREHĽAD NAJDÔLEŽITEJŠÍCH ZDROJOV %%
 
-Pri práci som čerpal z~oficiálnych dokumentácií Flask~\cite{flask_docs}, PostgreSQL~\cite{postgresql_docs}, TimescaleDB~\cite{timescaledb_docs}, PostGIS~\cite{postgis_docs}, React~\cite{react_docs} a~Leaflet~\cite{leaflet_docs}. Kľúčovým zdrojom boli aj špecifikácie LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec}. Nemenej dôležité boli konzultácie s~mentorom Bc.~Janom Mitorajom.
+Pri práci na projekte som čerpal predovšetkým z~oficiálnych dokumentácií jednotlivých technológií -- Flask~\cite{flask_docs} a~Socket.IO~\cite{socketio_docs} pre backend, PostgreSQL~\cite{postgresql_docs}, TimescaleDB~\cite{timescaledb_docs} a~PostGIS~\cite{postgis_docs} pre databázovú vrstvu, React~\cite{react_docs} a~Leaflet~\cite{leaflet_docs} pre frontend. Kľúčovým zdrojom pre pochopenie IoT protokolov boli špecifikácie LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec}, spolu s~datasheetmi trackerov SenseCap~\cite{sensecap_datasheet}. Nemenej dôležité boli pravidelné konzultácie s~mentorom Bc.~Janom Mitorajom, ktorý mi poskytoval praktické rady vychádzajúce z~jeho skúseností s~podobnými projektmi.
 
 %% ŠTRUKTÚRA PRÁCE %%
 
-Práca je štruktúrovaná do šiestich kapitol. Prvá kapitola predstavuje firmu a~moje pracovné zaradenie. Druhá obsahuje prehľad zadaných úloh. Tretia kapitola, tvoriaca jadro práce, popisuje postup riešenia od konfigurácie hardvéru po testovanie. Štvrtá a~piata kapitola reflektujú uplatnené a~chýbajúce znalosti. Šiesta kapitola sumarizuje dosiahnuté výsledky.
+Práca je štruktúrovaná do šiestich hlavných kapitol. Prvá kapitola predstavuje firmu Railsformers~s.r.o. a~moje pracovné zaradenie. Druhá kapitola obsahuje prehľad zadaných úloh s~odhadom časovej náročnosti. Tretia kapitola, ktorá tvorí jadro práce, podrobne popisuje postup riešenia jednotlivých úloh od konfigurácie hardvéru cez implementáciu backendu a~frontendu až po testovanie. Štvrtá kapitola reflektuje teoretické a~praktické znalosti zo štúdia, ktoré som pri práci uplatnil. Piata kapitola popisuje znalosti, ktoré mi chýbali a~ktoré som si musel počas praxe doplniť. Šiesta kapitola sumarizuje dosiahnuté výsledky a~obsahuje celkové zhodnotenie praxe.
 
 \endinput
