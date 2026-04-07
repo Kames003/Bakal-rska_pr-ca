@@ -197,13 +197,51 @@ Pre tracking osôb som používal trackery SenseCap T1000-B od firmy Seeed Studi
 
 \subsubsection{Technické špecifikácie}
 
-Tracker T1000-B vyniká kompaktnými rozmermi a~dlhou výdržou batérie. Zariadenie podporuje trojitú lokalizáciu kombinujúcu GPS, WiFi a~Bluetooth, čo umožňuje určenie pozície aj v~čiastočne zatienených priestoroch. Certifikácia IP65 zaručuje odolnosť voči prachu a~striekajúcej vode, čo je dôležité pre outdoor nasadenie na eventoch. Detailné technické parametre sú uvedené v~tabuľke~\ref{tab:tracker-specs}.
+Tracker T1000-B vyniká kompaktnými rozmermi a~dlhou výdržou batérie. Zariadenie podporuje trojitú lokalizáciu kombinujúcu GPS, WiFi a~Bluetooth, čo umožňuje určenie pozície aj v~čiastočne zatienených priestoroch. Certifikácia IP65 zaručuje odolnosť voči prachu a~striekajúcej vode, čo je dôležité pre outdoor nasadenie na eventoch.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Parameter} & \textbf{Hodnota} \\
+        \hline
+        Rozmery & 42.8 x 42.8 x 18.1 mm \\
+        Hmotnosť & 32 g \\
+        Batéria & 700 mAh Li-Po (nabíjateľná cez USB-C) \\
+        Lokalizácia & GPS/GLONASS + WiFi sniffing + Bluetooth \\
+        GPS presnosť & <10 m (outdoor), ~300 m (indoor) \\
+        LoRaWAN & Class A, SF7-SF12 \\
+        Certifikácia & IP65 (prachuvzdorný, odolný striekajúcej vode) \\
+        Prevádzková teplota & -20°C až +60°C \\
+        \hline
+    \end{tabular}
+    \caption{Technické špecifikácie SenseCap T1000-B}
+    \label{tab:tracker-specs}
+\end{table}
 
 \subsubsection{Porovnanie modelov T1000}
 
-Firma Seeed Studio ponúka niekoľko variant trackera T1000. V~rámci firmy sme po analýze dostupných modelov zvolili variant T1000-B, ktorý ponúka optimálny pomer funkcionalita a~cena pre outdoor tracking na eventoch. Porovnanie jednotlivých variant je uvedené v~tabuľke~\ref{tab:tracker-variants}.
+Firma Seeed Studio ponúka niekoľko variant trackera T1000. V~rámci firmy sme po analýze dostupných modelov zvolili variant T1000-B, ktorý ponúka optimálny pomer funkcionalita a~cena pre outdoor tracking na eventoch.
 
 Model T1000-A sme vylúčili z~dôvodu absencie WiFi a~Bluetooth lokalizácie -- tieto technológie môžu významne napomôcť pri určovaní pozície v~interiéri budov. Variant T1000-E s~podporou protokolu Meshtastic sme vyhodnotili ako predimenzovaný pre naše potreby. Meshtastic je primárne určený pre mesh siete bez existujúcej infraštruktúry, čo nekoresponduje s~naším scenárom nasadenia, kde disponujeme vlastnou LoRaWAN infraštruktúrou.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+        \hline
+        \textbf{Funkcia} & \textbf{T1000-A} & \textbf{T1000-B} & \textbf{T1000-E} \\
+        \hline
+        GPS/GLONASS & Áno & Áno & Áno \\
+        WiFi lokalizácia & Nie & Áno & Áno \\
+        Bluetooth lokalizácia & Nie & Áno & Áno \\
+        Meshtastic podpora & Nie & Nie & Áno \\
+        SOS tlačidlo & Nie & Áno & Áno \\
+        Orientačná cena & 700 Kč & 900 Kč & 1200 Kč \\
+        \hline
+    \end{tabular}
+    \caption{Porovnanie variant SenseCap T1000}
+    \label{tab:tracker-variants}
+\end{table}
 
 \subsubsection{OTAA registrácia}
 
@@ -230,44 +268,6 @@ Proces registrácie som realizoval v~týchto krokoch:
 \end{enumerate}
 
 Pri úspešnom pripojení tracker prehrá krátku melódiu signalizujúcu úspešnú registráciu do siete.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{|l|l|}
-        \hline
-        \textbf{Parameter} & \textbf{Hodnota} \\
-        \hline
-        Rozmery & 42.8 x 42.8 x 18.1 mm \\
-        Hmotnosť & 32 g \\
-        Batéria & 700 mAh Li-Po (nabíjateľná cez USB-C) \\
-        Lokalizácia & GPS/GLONASS + WiFi sniffing + Bluetooth \\
-        GPS presnosť & <10 m (outdoor), ~300 m (indoor) \\
-        LoRaWAN & Class A, SF7-SF12 \\
-        Certifikácia & IP65 (prachuvzdorný, odolný striekajúcej vode) \\
-        Prevádzková teplota & -20°C až +60°C \\
-        \hline
-    \end{tabular}
-    \caption{Technické špecifikácie SenseCap T1000-B}
-    \label{tab:tracker-specs}
-\end{table}
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{|l|c|c|c|c|}
-        \hline
-        \textbf{Funkcia} & \textbf{T1000-A} & \textbf{T1000-B} & \textbf{T1000-E} \\
-        \hline
-        GPS/GLONASS & Áno & Áno & Áno \\
-        WiFi lokalizácia & Nie & Áno & Áno \\
-        Bluetooth lokalizácia & Nie & Áno & Áno \\
-        Meshtastic podpora & Nie & Nie & Áno \\
-        SOS tlačidlo & Nie & Áno & Áno \\
-        Orientačná cena & 700 Kč & 900 Kč & 1200 Kč \\
-        \hline
-    \end{tabular}
-    \caption{Porovnanie variant SenseCap T1000}
-    \label{tab:tracker-variants}
-\end{table}
 
 \subsection{Problémy a~ich riešenia}
 \label{sec:HWProblemy}
