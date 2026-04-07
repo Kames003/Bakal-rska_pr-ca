@@ -16,9 +16,9 @@ Nasledujúca tabuľka sumarizuje prepojenie medzi predmetmi z~vysokoškolského 
         \hline
         \textbf{Predmet} & \textbf{Oblasť} & \textbf{Konkrétne využitie} \\
         \hline
-        Databázové systémy & SQL, návrh schém & PostgreSQL, normalizácia, indexy, triggery, TimescaleDB \\
+        Databázové systémy I a~II & SQL, návrh schém & PostgreSQL, normalizácia, indexy, triggery, TimescaleDB \\
         \hline
-        Vývoj webových aplikácií & Frontend, REST & React komponenty, REST API design, HTTP metódy \\
+        Vývoj informačných systémov & Frontend, REST & React komponenty, REST API design, HTTP metódy \\
         \hline
         Skriptovacie jazyky & Python & Backend logika, MQTT klient, parser, Flask \\
         \hline
@@ -26,11 +26,11 @@ Nasledujúca tabuľka sumarizuje prepojenie medzi predmetmi z~vysokoškolského 
         \hline
         Operačné systémy & Linux, kontajnery & Docker, Docker Compose, bash scripting \\
         \hline
-        Programovanie & OOP, algoritmizácia & Triedy, validácie, spracovanie edge cases \\
+        Úvod do programovania a~OOP & OOP, algoritmizácia & Triedy, validácie, spracovanie edge cases \\
         \hline
-        Softvérové inžinierstvo & Návrh systémov & Architektúra, modularita, návrhové vzory \\
+        Úvod do softvérového inžinierstva & Návrh systémov & Architektúra, modularita, návrhové vzory \\
         \hline
-        Bezpečnosť & Šifrovanie & TLS certifikáty, parameterized queries \\
+        Počítačová bezpečnosť & Šifrovanie & TLS certifikáty, parameterized queries \\
         \hline
     \end{tabular}
     \caption{Prehľad predmetov a~ich využitia v~projekte}
@@ -40,19 +40,19 @@ Nasledujúca tabuľka sumarizuje prepojenie medzi predmetmi z~vysokoškolského 
 \section{Detailný popis využitia}
 \label{sec:DetailZnalosti}
 
-\subsection{Databázové systémy}
+\subsection{Databázové systémy I a~II}
 \label{sec:ZnalostDB}
 
-Znalosti z~predmetu Databázové systémy tvorili základ pre návrh a~implementáciu databázovej vrstvy projektu. Aplikoval som princípy normalizácie pri návrhu schémy -- napríklad oddelenie tabuliek \texttt{devices}, \texttt{gps\_positions} a~\texttt{geofences} s~definovanými cudzími kľúčmi zabezpečilo referenčnú integritu dát.
+Znalosti z~predmetov Databázové systémy~I a~II tvorili základ pre návrh a~implementáciu databázovej vrstvy projektu. Aplikoval som princípy normalizácie pri návrhu schémy -- napríklad oddelenie tabuliek \texttt{devices}, \texttt{gps\_positions} a~\texttt{geofences} s~definovanými cudzími kľúčmi zabezpečilo referenčnú integritu dát.
 
 Praktické skúsenosti s~SQL som využil pri písaní komplexných dotazov, najmä pri práci s~PostGIS funkciami pre geopriestorové operácie. Znalosti o~indexoch mi pomohli optimalizovať výkon -- vytvoril som B-tree indexy na často filtrované stĺpce (\texttt{device\_id}, \texttt{timestamp}) a~GiST indexy pre geometrické dáta.
 
 Triggery, ktoré sme preberali v~pokračovaní predmetu Databázové systémy~1, teda v~predmete Databázové systémy~2, som implementoval pre automatické generovanie hodnoty stĺpca \texttt{location} z~GPS súradníc pri každom INSERT do tabuľky pozícií.
 
-\subsection{Vývoj webových aplikácií}
+\subsection{Vývoj informačných systémov}
 \label{sec:ZnalostWeb}
 
-Pri vývoji frontend časti aplikácie som priamo využil znalosti z~predmetu Vývoj webových aplikácií. Pochopenie komponentového prístupu a~životného cyklu webových aplikácií mi uľahčilo prácu s~React frameworkom.
+Pri vývoji frontend časti aplikácie som priamo využil znalosti z~predmetu Vývoj informačných systémov. Pochopenie komponentového prístupu a~životného cyklu webových aplikácií mi uľahčilo prácu s~React frameworkom.
 
 Koncept REST API, ktorý sme preberali v~kontexte HTTP metód (GET, POST, PUT, DELETE), som aplikoval pri návrhu backend endpointov. Dodržiaval som princípy ako bezstavovosť (stateless) a~správne používanie HTTP status kódov (200, 201, 404, 500).
 
@@ -85,10 +85,10 @@ Práca s~príkazovým riadkom a~bash skriptovanie, ktoré sme preberali, som vyu
 
 Koncepty ako environment variables, file permissions a~process isolation som prakticky aplikoval pri konfigurácii Docker kontajnerov a~zabezpečení citlivých údajov (certifikáty, heslá).
 
-\subsection{Programovanie a~algoritmizácia}
+\subsection{Úvod do programovania a~Objektovo orientované programovanie}
 \label{sec:ZnalostProgramovani}
 
-Základné princípy programovania a~algoritmizácie tvorili fundament pre celý vývoj. Schopnosť analyzovať problém, navrhnúť algoritmus a~implementovať ho som využíval denne.
+Základné princípy z~predmetov Úvod do programovania a~Objektovo orientované programovanie tvorili fundament pre celý vývoj. Schopnosť analyzovať problém, navrhnúť algoritmus a~implementovať ho som využíval denne.
 
 Konkrétne som aplikoval algoritmické myslenie pri implementácii detekcie GPS anomálií -- napríklad algoritmus pre detekciu ``teleportácie'' zariadenia využíva výpočet vzdialenosti medzi bodmi a~odhad maximálnej realistickej rýchlosti.
 
