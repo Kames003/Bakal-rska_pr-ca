@@ -394,10 +394,12 @@ class MQTTClient:
         self.parser.process(msg.payload)
 \end{lstlisting}
 
-\subsection{Parser SenseCap Payloadov}
+\subsection{Spracovanie Dekódovaných Dát}
 \label{sec:Parser}
 
-Správy z~trackerov prichádzajú vo formáte JSON s~vnorenou štruktúrou špecifickou pre zariadenia SenseCap. GPS súradnice a~telemetria sú uložené v~poli \texttt{messages} s~unikátnymi identifikátormi typu merania (measurement ID).
+Na firemnom MQTT brokeri mqtt.hedurio.com je nasadený oficiálny SenseCap decoder od Seeed Studio, ktorý transformuje raw LoRaWAN payload na štruktúrovaný JSON formát. Tento decoder je dostupný ako open-source na GitHub repozitári Seeed-Solution/SenseCAP-Decoder. Topic \texttt{application/SENSECAP/decoded} obsahuje už dekódované správy -- preto názov ``decoded''.
+
+Môj parser teda nespracováva raw binárny payload, ale prijíma hotový JSON s~vnorenou štruktúrou špecifickou pre zariadenia SenseCap. GPS súradnice a~telemetria sú uložené v~poli \texttt{messages} s~unikátnymi identifikátormi typu merania (measurement ID).
 
 \subsubsection{Mapovanie Measurement ID}
 
