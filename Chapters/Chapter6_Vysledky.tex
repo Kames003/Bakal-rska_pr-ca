@@ -1,81 +1,7 @@
 \chapter{Dosažené výsledky v průběhu odborné praxe a její celkové zhodnocení}
 \label{sec:Vysledky}
 
-% Rozsah: 3-4 strany
-
-V~tejto kapitole zhodnocujem výsledky dosiahnuté počas odbornej praxe, prezentovaním metriky projektu, spätnú väzbu od mentora a~reflexiu nad tým, čo by som v~budúcnosti urobil inak.
-
-\section{Súhrn implementovanej funkcionality}
-\label{sec:Funkcionalita}
-
-Počas šiestich mesiacov odbornej praxe som implementoval kompletný GPS tracking systém, ktorý pokrýva celý životný cyklus dát -- od prijatia surových GPS súradníc z~LoRaWAN trackerov až po ich vizualizáciu v~interaktívnej webovej aplikácii.
-
-\subsection{Real-time tracking}
-\label{sec:VysledkyRealtime}
-
-Jadrom systému je real-time sledovanie pozícií pomocou WebSocket komunikácie. Každá nová GPS pozícia prijatá cez MQTT broker je okamžite distribuovaná všetkým pripojeným klientom. Používateľ vidí pohyb trackerov na mape v~reálnom čase bez nutnosti manuálneho obnovovania stránky.
-
-\subsection{Historical playback}
-\label{sec:VysledkyHistorical}
-
-Režim Historical umožňuje prehliadanie histórie pohybu za zvolené časové obdobie. Implementoval som timeline slider, ktorý umožňuje plynulú animáciu trasy, a~heatmap vizualizáciu zobrazujúcu intenzitu pobytu na jednotlivých miestach. Táto funkcionalita je užitočná pre analýzu vzorcov pohybu a~identifikáciu frekventovaných oblastí.
-
-\subsection{Geofencing a~POI}
-\label{sec:VysledkyGeofencing}
-
-Geofencing modul umožňuje vytváranie virtuálnych zón (polygónov) na mape s~automatickým generovaním alertov pri vstupe, výstupe alebo dlhšom pobyte zariadenia v~zóne. Komplementárne k~tomu som implementoval Points of Interest (POI) s~funkciou nearby search, ktorá využíva PostGIS pre efektívne priestorové dotazy.
-
-\subsection{Device management}
-\label{sec:VysledkyDevices}
-
-Správa zariadení zahŕňa prehľad všetkých registrovaných trackerov so štatistikami, monitorovanie stavu batérie s~odhadom zostávajúcej výdrže, a~systém tagov pre kategorizáciu zariadení (napr. security, staff, VIP).
-
-\section{Metriky projektu}
-\label{sec:Metriky}
-
-Nasledujúca tabuľka sumarizuje kvantitatívne metriky implementovaného riešenia.
-
-\begin{table}[htbp]
-    \centering
-    \begin{tabular}{|l|r|}
-        \hline
-        \textbf{Metrika} & \textbf{Hodnota} \\
-        \hline
-        Backend riadkov kódu & $\sim$1\,500 \\
-        \hline
-        Frontend React komponentov & 13 \\
-        \hline
-        REST API endpointov & 28+ \\
-        \hline
-        WebSocket eventov & 5 \\
-        \hline
-        Databázových tabuliek & 8 \\
-        \hline
-        PostGIS funkcií & 4 \\
-        \hline
-        Podporovaných režimov & 3 \\
-        \hline
-        Docker services & 4 \\
-        \hline
-        Odpracovaných hodín & $\sim$165 \\
-        \hline
-    \end{tabular}
-    \caption{Metriky implementovaného projektu}
-    \label{tab:metriky}
-\end{table}
-
-\section{Technická kvalita}
-\label{sec:TechnickaKvalita}
-
-Pri implementácii som dbal na dodržiavanie osvedčených praktík softvérového inžinierstva:
-
-\begin{itemize}
-    \item \textbf{Modulárna architektúra} -- Oddelenie MQTT klienta, parsera, databázovej vrstvy a~API umožňuje nezávislý vývoj a~testovanie jednotlivých komponentov.
-    \item \textbf{Separation of concerns} -- Frontend komponenty sú rozdelené podľa zodpovednosti (MapView, Sidebar, Timeline, Geofencing).
-    \item \textbf{Škálovateľný databázový návrh} -- Použitie TimescaleDB hypertables umožňuje efektívne spracovanie veľkého objemu časových dát.
-    \item \textbf{Automatizované triggery} -- Databázové triggery automaticky generujú geometrické hodnoty a~kontrolujú geofence eventy.
-    \item \textbf{Bezpečnosť} -- TLS šifrovanie MQTT komunikácie, parameterized SQL queries pre prevenciu SQL injection, CORS konfigurácia.
-\end{itemize}
+Počas šiestich mesiacov odbornej praxe som implementoval kompletný GPS tracking systém pokrývajúci celý životný cyklus dát -- od prijatia surových GPS súradníc z~LoRaWAN trackerov až po ich vizualizáciu v~interaktívnej webovej aplikácii. Systém zahŕňa real-time sledovanie pozícií, prehliadanie histórie pohybu, geofencing s~automatickými alertmi a~správu zariadení s~monitorovaním stavu batérie.
 
 \section{Feedback od mentora}
 \label{sec:Feedback}
@@ -100,38 +26,16 @@ Počas celej praxe som bol v~pravidelnom kontakte s~mentorom Bc.~Janom Mitorajom
 \hfill -- odporúčanie technológií na začiatku projektu
 \end{quotation}
 
-\begin{quotation}
-``To je hodně cool!''
-
-\hfill -- reakcia na geofencing a~POI funkcionalitu
-\end{quotation}
-
 Tieto reakcie potvrdili, že zvolený prístup a~implementované funkcie zodpovedajú reálnym požiadavkám a~štandardom používaným vo firme.
 
 \section{Čo by som urobil inak}
 \label{sec:CoJinak}
 
-S~odstupom času a~nadobudnutými skúsenosťami identifikujem niekoľko oblastí, kde by som v~budúcnosti postupoval odlišne.
+S~odstupom času a~nadobudnutými skúsenosťami identifikujem niekoľko oblastí, kde by som postupoval odlišne. Väčšinu vývoja som realizoval so simulovanými GPS dátami, čo umožnilo rýchly iteratívny vývoj. Avšak niektoré edge cases, ako GPS drift pri slabom signáli alebo battery stuck bug, som objavil až pri testovaní s~reálnymi zariadeniami. Skoršia integrácia reálnych trackerov by tieto problémy odhalila skôr.
 
-\subsection{Skoršie real-world testovanie}
-\label{sec:RealWorldTesting}
-
-Väčšinu vývoja som realizoval so simulovanými GPS dátami, čo umožnilo rýchly iteratívny vývoj. Avšak niektoré edge cases, ako GPS drift pri slabom signáli alebo battery stuck bug (keď tracker reportuje konštantnú hodnotu batérie), som objavil až pri testovaní s~reálnymi zariadeniami. Skoršia integrácia reálnych trackerov by tieto problémy odhalila skôr.
-
-\subsection{Automatizované testy}
-\label{sec:AutomatizovaneTesty}
-
-Projekt aktuálne nemá formálnu test suite. Implementácia unit testov pre parser a~integration testov pre API by významne uľahčila refactoring a~pridávanie nových funkcionalít. Pri komplexnejších zmenách som musel manuálne overovať, či som nerozbil existujúcu funkcionalitu.
-
-\subsection{Dokumentácia počas vývoja}
-\label{sec:DokumentaceBehem}
+Projekt aktuálne nemá formálnu test suite. Implementácia unit testov pre parser a~integration testov pre API by významne uľahčila refactoring a~pridávanie nových funkcionalít. Podobne by implementácia automatizovaného CI/CD pipeline zvýšila kvalitu kódu vďaka automatickým kontrolám pri každom commite.
 
 Retrospektívne písanie dokumentácie pre bakalársku prácu bolo náročnejšie, než by bolo priebežné dokumentovanie rozhodnutí. Odporúčam budúcim študentom viesť si denník vývoja s~poznámkami o~dôležitých rozhodnutiach a~ich zdôvodneniach.
-
-\subsection{CI/CD pipeline}
-\label{sec:CICD}
-
-Implementácia automatizovaného CI/CD pipeline (napr. GitHub Actions) by zvýšila kvalitu kódu vďaka automatickým kontrolám pri každom commite. Aktuálne deployment prebieha manuálne cez Docker Compose.
 
 \section{Celkové zhodnotenie}
 \label{sec:CelkoveZhodnotenie}
