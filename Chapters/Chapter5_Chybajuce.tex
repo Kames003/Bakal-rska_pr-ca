@@ -3,34 +3,26 @@
 
 % Rozsah: 1 strana
 
-Počas odbornej praxe som sa stretol s~niekoľkými technológiami a~nástrojmi, ktoré neboli súčasťou vysokoškolského štúdia. Chýbajúce znalosti sa dajú rozdeliť do dvoch kategórií -- technológie, ktoré som sa naučil počas úvodných onboarding úloh, a~špecializované nástroje potrebné pre hlavný projekt.
+Počas odbornej praxe som sa stretol s~niekoľkými technológiami a~nástrojmi, ktoré neboli súčasťou vysokoškolského štúdia.
 
-\section{Onboarding -- DevOps technológie}
-\label{sec:Onboarding}
+\section{DevOps technológie}
+\label{sec:ChybDevOps}
 
-Pred zahájením hlavného projektu som dostal sériu úvodných úloh zameraných na DevOps technológie, ktoré firma používa. Tieto oblasti neboli súčasťou bakalárskeho štúdia:
-
-\begin{itemize}
-    \item \textbf{Docker a~Docker Compose} -- Kontajnerizácia aplikácií a~orchestrácia viacerých služieb. Vytvoril som jednoduchú aplikáciu s~PostgreSQL databázou a~Nginx webserverom, všetko prepojené cez Docker Compose.
-    \item \textbf{GitLab CI/CD} -- Automatizované buildy a~deployment. Nastavil som pipeline pre zostavenie Docker image a~nahranie do GitLab Container Registry.
-    \item \textbf{Dokku} -- PaaS platforma pre deployment aplikácií. Nasadil som testovaciu aplikáciu na virtuálnom stroji s~Debian OS.
-\end{itemize}
-
-Tieto úlohy mi poskytli praktický základ, ktorý som následne využil pri kontajnerizácii hlavného projektu.
+Vďaka úvodným úlohám, ktoré som dostal pred hlavným projektom, som nadobudol praktické znalosti o~technológiách, ktoré na fakulte vyučované nie sú, no v~modernom vývoji softvéru sú nevyhnutné. S~Dockerom a~kontajnerizáciou som sa už predtým stretol, ale tieto úlohy prehĺbili moje znalosti a~pripravili ma na ich zakomponovanie do projektu. Išlo konkrétne o~Docker a~Docker Compose pre orchestráciu viacerých služieb, GitLab CI/CD pre automatizované buildy a~deployment, webserver Nginx a~platformu Dokku pre nasadzovanie aplikácií.
 
 \section{Databázové rozšírenia}
 \label{sec:ChybDatabazy}
 
-Rozšírenia PostgreSQL -- TimescaleDB~\cite{timescaledb_docs} pre prácu s~časovými radami a~PostGIS~\cite{postgis_docs} pre geopriestorové operácie -- neboli súčasťou predmetov Databázové systémy. Musel som sa naučiť koncept hypertables, automatickú kompresiu dát, geometrické typy a~priestorové funkcie. Základy relačných databáz zo štúdia mi však poskytli solídny fundament pre rýchle osvojenie týchto rozšírení.
+Rozšírenia PostgreSQL -- TimescaleDB~\cite{timescaledb_docs} pre prácu s~časovými radami a~PostGIS~\cite{postgis_docs} pre geopriestorové operácie -- neboli súčasťou predmetov Databázové systémy. Musel som sa naučiť koncept hypertables, automatickú kompresiu historických dát, chunking pre optimalizáciu dotazov, geometrické typy (POINT, POLYGON), priestorové funkcie (ST\_Contains, ST\_Distance, ST\_DWithin) a~GIST indexy pre efektívne priestorové vyhľadávanie. Základy relačných databáz zo štúdia mi však poskytli solídny fundament pre rýchle osvojenie týchto rozšírení.
 
 \section{IoT protokoly}
 \label{sec:ChybProtokoly}
 
-Špecializované IoT protokoly LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec} neboli súčasťou predmetu Počítačové siete. Pri LoRaWAN som sa musel naučiť OTAA aktiváciu a~štruktúru payload správ. MQTT publish/subscribe model som pochopil rýchlo vďaka znalostiam o~sieťovej komunikácii, ale práca s~TLS zabezpečením vyžadovala dodatočné štúdium.
+Špecializované IoT protokoly LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec} neboli súčasťou predmetu Počítačové siete. Pri LoRaWAN som sa musel naučiť OTAA (Over-The-Air Activation) aktiváciu zariadení, spreading factors ovplyvňujúce dosah a~rýchlosť prenosu, štruktúru payload správ a~ich dekódovanie, konfiguráciu gateway a~network servera, ako aj riešenie problémov s~firmware verziami trackerov. MQTT publish/subscribe model som pochopil rýchlo vďaka znalostiam o~sieťovej komunikácii, ale práca s~TLS zabezpečením, správa certifikátov a~konfigurácia QoS (Quality of Service) úrovní vyžadovala dodatočné štúdium oficiálnej dokumentácie.
 
 \section{Frontend technológie}
 \label{sec:ChybFrontend}
 
-V~oblasti frontendu som mal základné znalosti z~predmetu Vývoj informačných systémov. Počas praxe som ich prehĺbil o~prácu s~knižnicou Leaflet.js~\cite{leaflet_docs} pre mapové vizualizácie a~Socket.IO~\cite{socketio_docs} pre real-time WebSocket komunikáciu.
+So základmi frontendového vývoja som sa stretol v~predmete Vývoj informačných systémov. Počas praxe som tieto znalosti prehĺbil a~rozšíril o~prácu so špecializovanými knižnicami. Pri Leaflet.js~\cite{leaflet_docs} som sa naučil prácu s~mapovými vrstvami, markermi, polylines pre vykreslenie trás, polygon editovaním pre geofencing a~heatmap pluginom pre vizualizáciu intenzity pobytu. Socket.IO~\cite{socketio_docs} mi prinieslo pochopenie event-based real-time komunikácie, riešenie reconnection scenárov pri výpadku spojenia a~správne poradie spracovania správ.
 
 \endinput
