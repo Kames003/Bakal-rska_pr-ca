@@ -962,13 +962,6 @@ Heatmapa sa ukázala ako veľmi užitočná pre analýzu pohybových vzorov -- i
     \label{fig:fe-historical}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/heat_mapa_historical.png}
-    \caption{Heatmap vizualizácia v~Historical mode -- červené oblasti indikujú miesta s~najväčšou koncentráciou pozícií}
-    \label{fig:fe-heatmap}
-\end{figure}
-
 \subsubsection{GEOFENCING Mode}
 
 Správa virtuálnych zón -- detailne popísané v~nasledujúcej sekcii.
@@ -1056,6 +1049,13 @@ WHERE ST_Contains(
 \end{figure}
 
 Táto architektúra zabezpečuje detekciu v~reálnom čase s~minimálnou latenciou.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Figures/mazanie_zony.png}
+    \caption{Mazanie geofence zóny -- používateľ môže zónu odstrániť cez kontextové menu}
+    \label{fig:geo-delete}
+\end{figure}
 
 \subsection{Points of Interest}
 \label{sec:POI}
