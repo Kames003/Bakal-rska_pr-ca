@@ -460,6 +460,14 @@ def extract_gps(measurements: list) -> dict:
 
 Počas vývoja a~testovania som identifikoval množstvo edge cases, ktoré bolo potrebné ošetriť pre spoľahlivú prevádzku systému. Konzultant ocenil tento proaktívny prístup k~validáciám, pretože mnohé z~týchto prípadov neboli na prvý pohľad zrejmé.
 
+\subsubsection{Detekcia GPS Driftu}
+
+Špeciálnu pozornosť som venoval detekcii GPS driftu -- situácie, keď tracker hlási pozíciu vzdialenú stovky metrov od skutočnej polohy. Toto sa deje pri slabom GPS signáli, napríklad v~blízkosti vysokých budov alebo v~hustom lese.
+
+Implementoval som detekciu založenú na výpočte rýchlosti medzi dvoma po sebe idúcimi pozíciami. Ak by zariadenie muselo cestovať rýchlosťou vyššou ako 500 km/h, aby sa dostalo z~predchádzajúcej pozície na aktuálnu, považujem novú pozíciu za neplatnú a~zahodím ju.
+
+Tento prístup má svoje limitácie -- nezachytí pomalý drift, kde sa pozícia posúva postupne. Pre komplexnejšie riešenie by bolo potrebné implementovať Kalman filter alebo podobný algoritmus, čo som ponechal ako možné budúce rozšírenie.
+
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|p{3cm}|p{4cm}|p{5cm}|}
@@ -486,14 +494,6 @@ Počas vývoja a~testovania som identifikoval množstvo edge cases, ktoré bolo 
     \caption{Edge cases identifikované počas vývoja a~ich riešenia}
     \label{tab:edgecases}
 \end{table}
-
-\subsubsection{Detekcia GPS Driftu}
-
-Špeciálnu pozornosť som venoval detekcii GPS driftu -- situácie, keď tracker hlási pozíciu vzdialenú stovky metrov od skutočnej polohy. Toto sa deje pri slabom GPS signáli, napríklad v~blízkosti vysokých budov alebo v~hustom lese.
-
-Implementoval som detekciu založenú na výpočte rýchlosti medzi dvoma po sebe idúcimi pozíciami. Ak by zariadenie muselo cestovať rýchlosťou vyššou ako 500 km/h, aby sa dostalo z~predchádzajúcej pozície na aktuálnu, považujem novú pozíciu za neplatnú a~zahodím ju.
-
-Tento prístup má svoje limitácie -- nezachytí pomalý drift, kde sa pozícia posúva postupne. Pre komplexnejšie riešenie by bolo potrebné implementovať Kalman filter alebo podobný algoritmus, čo som ponechal ako možné budúce rozšírenie.
 
 
 %% ============================================================
