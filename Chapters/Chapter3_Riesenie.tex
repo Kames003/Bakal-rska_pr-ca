@@ -219,7 +219,7 @@ Pre tracking osôb som používal trackery SenseCap T1000-B od firmy Seeed Studi
 
 \subsubsection{Porovnanie modelov T1000}
 
-Firma Seeed Studio ponúka niekoľko variant trackera T1000. Pre tento projekt som po analýze zvolil verziu B, ktorá ponúka najlepší pomer cena/funkcionalita pre outdoor tracking.
+Firma Seeed Studio ponúka niekoľko variant trackera T1000. V~rámci firmy sme po analýze dostupných modelov zvolili variant T1000-B, ktorý ponúka optimálny pomer funkcionalita a~cena pre outdoor tracking na eventoch.
 
 \begin{table}[htbp]
     \centering
@@ -239,7 +239,7 @@ Firma Seeed Studio ponúka niekoľko variant trackera T1000. Pre tento projekt s
     \end{tabular}
 \end{table}
 
-Model T1000-A som zamietol kvôli absencii WiFi a~Bluetooth lokalizácie, ktoré môžu pomôcť s~určením pozície v~interiéri. Model T1000-E s~Meshtastic podporou bol pre tento projekt predimenzovaný a~drahší -- Meshtastic je určený pre mesh siete bez infraštruktúry, čo nie je náš prípad.
+Model T1000-A sme vylúčili z~dôvodu absencie WiFi a~Bluetooth lokalizácie -- tieto technológie môžu významne napomôcť pri určovaní pozície v~interiéri budov. Variant T1000-E s~podporou protokolu Meshtastic sme vyhodnotili ako predimenzovaný pre naše potreby. Meshtastic je primárne určený pre mesh siete bez existujúcej infraštruktúry, čo nekoresponduje s~naším scenárom nasadenia, kde disponujeme vlastnou LoRaWAN infraštruktúrou.
 
 \subsubsection{OTAA registrácia}
 
