@@ -3,60 +3,111 @@
 
 % Rozsah: 2-3 strany
 
-\section{Přehled využitých znalostí}
+Počas odbornej praxe som mal príležitosť aplikovať široké spektrum znalostí získaných počas štúdia na Fakulte elektrotechniky a~informatiky. V~tejto kapitole popisujem konkrétne predmety a~oblasti, ktoré mi pomohli pri riešení zadaných úloh.
+
+\section{Prehľad využitých znalostí}
 \label{sec:PrehledZnalosti}
 
-% Hlavní tabulka: Předmět | Oblast | Konkrétní využití
-% TODO: Doplnit tabulku
-%
-% | Předmět | Oblast | Konkrétní využití |
-% |---------|--------|-------------------|
-% | Databázové systémy | SQL, návrh schémat | PostgreSQL, normalizace, indexy, triggery |
-% | Vývoj webových aplikací | Frontend, REST | React komponenty, REST API design |
-% | Skriptovací jazyky | Python | Backend logika, MQTT klient, parser |
-% | Počítačové sítě | Protokoly | MQTT, WebSocket, TLS/SSL |
-% | Operační systémy | Linux, kontejnery | Docker, Docker Compose |
-% | Programování | OOP, algoritmizace | Třídy, validace, edge cases |
-% | Softwarové inženýrství | Návrh systémů | Architektura, modularita |
-% | Bezpečnost | Šifrování | TLS certifikáty, parameterized queries |
+Nasledujúca tabuľka sumarizuje prepojenie medzi predmetmi z~vysokoškolského štúdia a~ich praktickým využitím v~projekte GPS tracking systému.
 
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|l|l|p{6cm}|}
+        \hline
+        \textbf{Predmet} & \textbf{Oblasť} & \textbf{Konkrétne využitie} \\
+        \hline
+        Databázové systémy & SQL, návrh schém & PostgreSQL, normalizácia, indexy, triggery, TimescaleDB \\
+        \hline
+        Vývoj webových aplikácií & Frontend, REST & React komponenty, REST API design, HTTP metódy \\
+        \hline
+        Skriptovacie jazyky & Python & Backend logika, MQTT klient, parser, Flask \\
+        \hline
+        Počítačové siete & Protokoly & MQTT, WebSocket, TLS/SSL, TCP/IP \\
+        \hline
+        Operačné systémy & Linux, kontajnery & Docker, Docker Compose, bash scripting \\
+        \hline
+        Programovanie & OOP, algoritmizácia & Triedy, validácie, spracovanie edge cases \\
+        \hline
+        Softvérové inžinierstvo & Návrh systémov & Architektúra, modularita, návrhové vzory \\
+        \hline
+        Bezpečnosť & Šifrovanie & TLS certifikáty, parameterized queries \\
+        \hline
+    \end{tabular}
+    \caption{Prehľad predmetov a~ich využitia v~projekte}
+    \label{tab:znalosti-prehlad}
+\end{table}
 
-\section{Detailní popis využití}
+\section{Detailný popis využitia}
 \label{sec:DetailZnalosti}
 
 \subsection{Databázové systémy}
 \label{sec:ZnalostDB}
-% Návrh schématu, normalizace, indexy, triggery
-% TODO: Doplnit obsah
 
-\subsection{Vývoj webových aplikací}
+Znalosti z~predmetu Databázové systémy tvorili základ pre návrh a~implementáciu databázovej vrstvy projektu. Aplikoval som princípy normalizácie pri návrhu schémy -- napríklad oddelenie tabuliek \texttt{devices}, \texttt{gps\_positions} a~\texttt{geofences} s~definovanými cudzími kľúčmi zabezpečilo referenčnú integritu dát.
+
+Praktické skúsenosti s~SQL som využil pri písaní komplexných dotazov, najmä pri práci s~PostGIS funkciami pre geopriestorové operácie. Znalosti o~indexoch mi pomohli optimalizovať výkon -- vytvoril som B-tree indexy na často filtrované stĺpce (\texttt{device\_id}, \texttt{timestamp}) a~GiST indexy pre geometrické dáta.
+
+Triggery, ktoré sme preberali v~teoretickej časti predmetu, som implementoval pre automatické generovanie hodnoty stĺpca \texttt{location} z~GPS súradníc pri každom INSERT do tabuľky pozícií.
+
+\subsection{Vývoj webových aplikácií}
 \label{sec:ZnalostWeb}
-% Komponentový přístup, REST API, HTTP metody
-% TODO: Doplnit obsah
 
-\subsection{Skriptovací jazyky}
+Pri vývoji frontend časti aplikácie som priamo využil znalosti z~predmetu Vývoj webových aplikácií. Pochopenie komponentového prístupu a~životného cyklu webových aplikácií mi uľahčilo prácu s~React frameworkom.
+
+Koncept REST API, ktorý sme preberali v~kontexte HTTP metód (GET, POST, PUT, DELETE), som aplikoval pri návrhu backend endpointov. Dodržiaval som princípy ako bezstavovosť (stateless) a~správne používanie HTTP status kódov (200, 201, 404, 500).
+
+Znalosti o~responzívnom dizajne a~CSS som využil pri implementácii používateľského rozhrania, ktoré sa prispôsobuje rôznym veľkostiam obrazovky -- od desktopových monitorov po tablety používané operátormi v~teréne.
+
+\subsection{Skriptovacie jazyky}
 \label{sec:ZnalostPython}
-% Python backend, OOP, knihovny
-% TODO: Doplnit obsah
 
-\subsection{Počítačové sítě}
+Python, s~ktorým som sa zoznámil v~predmete Skriptovacie jazyky, sa stal hlavným jazykom pre backend vývoj. Princípy dynamického typovania a~práce s~knižnicami som aplikoval pri implementácii MQTT klienta pomocou knižnice \texttt{paho-mqtt}.
+
+Skúsenosti s~parsovaním dátových štruktúr (JSON, XML) mi pomohli pri implementácii parsera pre spracovanie payloadov z~GPS trackerov. Využil som vstavaný modul \texttt{json} a~naučil sa efektívne pracovať s~vnorennými dátovými štruktúrami.
+
+Objektovo-orientovaný prístup, ktorý sme v~Pythone preberali, som aplikoval pri štruktúrovaní backend kódu do tried -- napríklad \texttt{MQTTClient}, \texttt{GPSParser} a~\texttt{DatabaseHandler}.
+
+\subsection{Počítačové siete}
 \label{sec:ZnalostSite}
-% Protokoly MQTT, WebSocket, TLS
-% TODO: Doplnit obsah
 
-\subsection{Operační systémy}
+Teoretické znalosti z~predmetu Počítačové siete som využil pri práci s~komunikačnými protokolmi. Pochopenie vrstiev TCP/IP modelu mi pomohlo pri debugovaní problémov s~MQTT pripojením a~konfiguráciou TLS šifrovania.
+
+Koncept publish/subscribe modelu, hoci priamo nepokrytý v~predmete, vychádzal z~pochopenia sieťovej komunikácie a~message passing. Pri implementácii WebSocket real-time komunikácie som využil znalosti o~rozdieloch medzi TCP a~UDP, ako aj o~persistent connections.
+
+Konfigurácia TLS certifikátov pre zabezpečené MQTT pripojenie vyžadovala pochopenie asymetrickej kryptografie a~certifikačných autorít -- témy, ktoré nadväzovali na základy prebrané v~sieťových predmetoch.
+
+\subsection{Operačné systémy}
 \label{sec:ZnalostOS}
-% Linux, Docker, kontejnerizace
-% TODO: Doplnit obsah
 
-\subsection{Programování a algoritmizace}
+Znalosti z~predmetu Operačné systémy som aplikoval pri práci s~Linuxom a~kontajnerizáciou. Pochopenie procesov, vlákien a~medziprocesovej komunikácie mi pomohlo pri návrhu architektúry s~oddelenými Docker kontajnermi pre jednotlivé služby.
+
+Práca s~príkazovým riadkom a~bash skriptovanie, ktoré sme preberali, som využil pri automatizácii deployment procesov a~pri písaní health-check skriptov pre Docker Compose.
+
+Koncepty ako environment variables, file permissions a~process isolation som prakticky aplikoval pri konfigurácii Docker kontajnerov a~zabezpečení citlivých údajov (certifikáty, heslá).
+
+\subsection{Programovanie a~algoritmizácia}
 \label{sec:ZnalostProgramovani}
-% OOP, validace, edge cases handling
-% TODO: Doplnit obsah
 
-\subsection{Softwarové inženýrství}
+Základné princípy programovania a~algoritmizácie tvorili fundament pre celý vývoj. Schopnosť analyzovať problém, navrhnúť algoritmus a~implementovať ho som využíval denne.
+
+Konkrétne som aplikoval algoritmické myslenie pri implementácii detekcie GPS anomálií -- napríklad algoritmus pre detekciu ``teleportácie'' zariadenia využíva výpočet vzdialenosti medzi bodmi a~odhad maximálnej realistickej rýchlosti.
+
+Práca s~dátovými štruktúrami (zoznamy, slovníky, fronty) bola esenciálna pri spracovaní GPS dát a~implementácii caching mechanizmov pre optimalizáciu výkonu.
+
+\subsection{Softvérové inžinierstvo}
 \label{sec:ZnalostSE}
-% Architektura, modularita, MVC
-% TODO: Doplnit obsah
+
+Princípy softvérového inžinierstva som aplikoval pri návrhu celkovej architektúry systému. Rozdelenie na vrstvy (prezentačná, aplikačná, dátová) vychádzalo z~teoretických znalostí o~viacvrstvových architektúrach.
+
+Koncept modularita, ktorý bol zdôrazňovaný v~predmete, som dodržiaval dôsledne -- každý komponent (MQTT klient, parser, API, frontend) je nezávislý a~komunikuje s~ostatnými cez definované rozhrania.
+
+Pri verzovaní kódu som využil znalosti o~Git workflow, vrátane feature branches a~merge stratégií, čo uľahčilo spoluprácu a~sledovanie zmien počas vývoja.
+
+\section{Zhrnutie}
+\label{sec:ZnalostZhrnutie}
+
+Odborná prax mi ukázala, že teoretické znalosti získané počas štúdia majú priamy praktický význam. Najviac som ocenil prepojenie medzi databázovými systémami, programovaním a~sieťovými protokolmi -- tieto oblasti sa v~reálnom projekte prirodzene kombinujú a~dopĺňajú.
+
+Zároveň som si uvedomil, že štúdium poskytuje solídny základ, na ktorom je možné stavať a~rozširovať znalosti podľa konkrétnych požiadaviek projektu. Špecifické technológie ako TimescaleDB, PostGIS či Leaflet.js neboli súčasťou výuky, ale vďaka pochopeniu základných princípov som sa ich dokázal pomerne rýchlo naučiť.
 
 \endinput
