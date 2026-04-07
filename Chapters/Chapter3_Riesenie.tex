@@ -292,6 +292,13 @@ Presnosť GPS vnútri budov dosahovala len približne 300 metrov, čo výrazne k
 
 Pre testovanie počas vývoja som pravidelne chodil von, kde presnosť bola konzistentne pod 10 metrov. Pre produkčné nasadenie na outdoor eventoch tento problém nie je relevantný. Pre prípadné indoor použitie by bolo potrebné implementovať WiFi alebo Bluetooth lokalizáciu, ktorú tracker T1000-B podporuje, ale vyžaduje databázu známych access pointov.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/gps_rozptyl_indoor.png}
+    \caption{Rozptyl GPS súradníc pri statickom umiestnení trackera v~budove -- všetky body pochádzajú z~jedného miesta}
+    \label{fig:gps-indoor-scatter}
+\end{figure}
+
 
 %% ============================================================
 \section{MQTT a~Parser}
