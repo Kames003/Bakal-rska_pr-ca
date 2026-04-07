@@ -1,65 +1,36 @@
 \chapter{Znalosti či dovednosti scházející studentovi v průběhu odborné praxe}
 \label{sec:Chybejici}
 
-% Rozsah: 1-2 strany
+% Rozsah: 1 strana
 
-Počas odbornej praxe som sa stretol s~niekoľkými technológiami a~nástrojmi, ktoré neboli súčasťou vysokoškolského štúdia. Táto kapitola popisuje konkrétne oblasti, v~ktorých som musel získať nové znalosti, a~spôsoby, akými som tieto medzery prekonal.
+Počas odbornej praxe som sa stretol s~niekoľkými technológiami a~nástrojmi, ktoré neboli súčasťou vysokoškolského štúdia. Chýbajúce znalosti sa dajú rozdeliť do dvoch kategórií -- technológie, ktoré som sa naučil počas úvodných onboarding úloh, a~špecializované nástroje potrebné pre hlavný projekt.
 
-\section{Popis chýbajúcich znalostí}
-\label{sec:DetailChybejici}
+\section{Onboarding -- DevOps technológie}
+\label{sec:Onboarding}
 
-\subsection{TimescaleDB a~PostGIS}
-\label{sec:ChybTimeScale}
-
-Najväčšou výzvou bolo osvojenie si rozšírení PostgreSQL -- TimescaleDB pre prácu s~časovými radami a~PostGIS pre geopriestorové operácie. Tieto technológie neboli súčasťou predmetov Databázové systémy I a~II, hoci základy relačných databáz, ktoré som v~týchto predmetoch získal, mi poskytli solídny fundament.
-
-Pri TimescaleDB som sa musel naučiť koncept hypertables, chunking a~automatickú kompresiu historických dát. Pomohla mi oficiálna dokumentácia~\cite{timescaledb_docs} a~konzultácie s~mentorom, ktorý mi vysvetlil praktické použitie v~existujúcich projektoch firmy.
-
-PostGIS vyžadoval pochopenie geometrických typov (POINT, POLYGON), priestorových funkcií (ST\_Contains, ST\_Distance) a~GIST indexov. Experimentoval som s~rôznymi dotazmi v~pgAdmin, kým som pochopil, ako efektívne pracovať s~geografickými dátami.
-
-\subsection{LoRaWAN a~MQTT protokoly}
-\label{sec:ChybProtokoly}
-
-V~predmete Počítačové siete sme preberali základy TCP/IP a~bežné aplikačné protokoly, ale špecializované IoT protokoly ako LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec} neboli súčasťou osnov.
-
-Pri LoRaWAN som sa musel naučiť špecifiká ako OTAA aktivácia, spreading factors, a~štruktúru payload správ. Praktické skúsenosti som získal pri konfigurácii gateway a~trackerov, kde som musel riešiť problémy s~firmware verziami a~network server integráciou.
-
-MQTT publish/subscribe model som pochopil relatívne rýchlo vďaka znalostiam o~sieťovej komunikácii, ale práca s~TLS zabezpečením a~správa certifikátov vyžadovala dodatočné štúdium.
-
-\subsection{Frontend technológie}
-\label{sec:ChybFrontend}
-
-Leaflet.js pre mapové vizualizácie a~Socket.IO pre real-time komunikáciu boli pre mňa úplne nové technológie. V~predmete Vývoj informačných systémov sme preberali základy webového vývoja, ale práca s~interaktívnymi mapami a~WebSocket komunikáciou vyžadovala samostatné štúdium.
-
-Pri Leaflet.js~\cite{leaflet_docs} som sa naučil prácu s~vrstvami, markermi, polylines a~heatmap pluginom. Socket.IO~\cite{socketio_docs} vyžadovalo pochopenie event-based komunikácie a~riešenie edge cases ako reconnection a~message ordering.
-
-\section{Reflexia a~odporúčania}
-\label{sec:Reflexe}
-
-\subsection{Ako som prekonal znalostné medzery}
-\label{sec:PrekonaniZnalosti}
-
-Môj prístup k~učeniu sa nových technológií kombinoval niekoľko stratégií:
-
-\begin{enumerate}
-    \item \textbf{Oficiálna dokumentácia} -- Začínal som vždy štúdiom getting started sekcií a~postupne prechádzal k~pokročilejším témam.
-    \item \textbf{Praktické experimenty} -- Vytváral som jednoduché prototypy pre overenie pochopenia konceptov pred integráciou do hlavného projektu.
-    \item \textbf{Konzultácie s~mentorom} -- Pri nejasnostiach som sa obracal na mentora, ktorý mi vysvetlil praktické use cases a~best practices z~reálnych projektov.
-    \item \textbf{Debugging a~analýza} -- Veľa som sa naučil pri riešení problémov, kedy som musel hlbšie pochopiť fungovanie technológie.
-\end{enumerate}
-
-\subsection{Odporúčania pre budúcich študentov}
-\label{sec:Doporuceni}
-
-Na základe mojich skúseností by som odporúčal niekoľko zmien v~študijnom programe:
+Pred zahájením hlavného projektu som dostal sériu úvodných úloh zameraných na DevOps technológie, ktoré firma používa. Tieto oblasti neboli súčasťou bakalárskeho štúdia:
 
 \begin{itemize}
-    \item \textbf{IoT technológie} -- Zaradenie predmetu zameraného na Internet of Things by pripravilo študentov na rastúci trh IoT riešení. Protokoly ako MQTT a~LoRaWAN sú v~praxi čoraz bežnejšie.
-    \item \textbf{Time-series databázy} -- Rozšírenie predmetu Databázové systémy o~špecializované databázy (TimescaleDB, InfluxDB) by doplnilo znalosti o~spracovaní veľkých objemov časových dát.
-    \item \textbf{Geospatial operácie} -- Základy PostGIS alebo podobných nástrojov by boli prínosom pre projekty vyžadujúce prácu s~lokalizačnými dátami.
-    \item \textbf{Real-time komunikácia} -- WebSocket a~podobné technológie sú dnes štandardom pre moderné webové aplikácie.
+    \item \textbf{Docker a~Docker Compose} -- Kontajnerizácia aplikácií a~orchestrácia viacerých služieb. Vytvoril som jednoduchú aplikáciu s~PostgreSQL databázou a~Nginx webserverom, všetko prepojené cez Docker Compose.
+    \item \textbf{GitLab CI/CD} -- Automatizované buildy a~deployment. Nastavil som pipeline pre zostavenie Docker image a~nahranie do GitLab Container Registry.
+    \item \textbf{Dokku} -- PaaS platforma pre deployment aplikácií. Nasadil som testovaciu aplikáciu na virtuálnom stroji s~Debian OS.
 \end{itemize}
 
-Zároveň si uvedomujem, že štúdium nemôže pokryť všetky technológie a~schopnosť samostatného učenia je kľúčová pre prácu v~IT. Prax mi ukázala, že solídne základy z~vysokej školy umožňujú pomerne rýchle osvojenie nových nástrojov, ak študent rozumie základným princípom.
+Tieto úlohy mi poskytli praktický základ, ktorý som následne využil pri kontajnerizácii hlavného projektu.
+
+\section{Databázové rozšírenia}
+\label{sec:ChybDatabazy}
+
+Rozšírenia PostgreSQL -- TimescaleDB~\cite{timescaledb_docs} pre prácu s~časovými radami a~PostGIS~\cite{postgis_docs} pre geopriestorové operácie -- neboli súčasťou predmetov Databázové systémy. Musel som sa naučiť koncept hypertables, automatickú kompresiu dát, geometrické typy a~priestorové funkcie. Základy relačných databáz zo štúdia mi však poskytli solídny fundament pre rýchle osvojenie týchto rozšírení.
+
+\section{IoT protokoly}
+\label{sec:ChybProtokoly}
+
+Špecializované IoT protokoly LoRaWAN~\cite{lorawan_spec} a~MQTT~\cite{mqtt_spec} neboli súčasťou predmetu Počítačové siete. Pri LoRaWAN som sa musel naučiť OTAA aktiváciu a~štruktúru payload správ. MQTT publish/subscribe model som pochopil rýchlo vďaka znalostiam o~sieťovej komunikácii, ale práca s~TLS zabezpečením vyžadovala dodatočné štúdium.
+
+\section{Frontend technológie}
+\label{sec:ChybFrontend}
+
+V~oblasti frontendu som mal základné znalosti z~predmetu Vývoj informačných systémov. Počas praxe som ich prehĺbil o~prácu s~knižnicou Leaflet.js~\cite{leaflet_docs} pre mapové vizualizácie a~Socket.IO~\cite{socketio_docs} pre real-time WebSocket komunikáciu.
 
 \endinput
