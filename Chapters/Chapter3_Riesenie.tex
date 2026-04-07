@@ -647,59 +647,7 @@ Vzťahy medzi tabuľkami sú nasledovné:
 
 \begin{figure}[htbp]
     \centering
-    \begin{tikzpicture}[
-        entity/.style={rectangle, draw=black, fill=blue!10, minimum width=2.8cm, minimum height=0.8cm, font=\small\bfseries},
-        hypertable/.style={rectangle, draw=black, fill=green!15, minimum width=2.8cm, minimum height=0.8cm, font=\small\bfseries},
-        postgis/.style={rectangle, draw=black, fill=orange!15, minimum width=2.8cm, minimum height=0.8cm, font=\small\bfseries},
-        relation/.style={-{Stealth}, thick},
-        every node/.style={font=\small}
-    ]
-        % Hlavná entita - devices (centrum)
-        \node[entity] (devices) at (0, 0) {devices};
-
-        % Hypertable - positions
-        \node[hypertable] (positions) at (4, 1.5) {positions};
-
-        % Regular - device_tags
-        \node[entity] (tags) at (4, -1.5) {device\_tags};
-
-        % PostGIS - geofences
-        \node[postgis] (geofences) at (-4.5, 2) {geofences};
-
-        % Regular - geofence_events
-        \node[entity] (gf_events) at (-4.5, 0) {geofence\_events};
-
-        % Regular - geofence_state
-        \node[entity] (gf_state) at (-4.5, -2) {geofence\_state};
-
-        % PostGIS - poi
-        \node[postgis] (poi) at (0, -3) {poi};
-
-        % Regular - poi_visits
-        \node[entity] (poi_visits) at (4, -3) {poi\_visits};
-
-        % Vzťahy - devices
-        \draw[relation] (devices) -- node[above, sloped] {1:N} (positions);
-        \draw[relation] (devices) -- node[above, sloped] {1:N} (tags);
-        \draw[relation] (devices) -- node[above, sloped, pos=0.7] {1:N} (gf_events);
-        \draw[relation] (devices) -- node[below, sloped, pos=0.7] {1:N} (gf_state);
-        \draw[relation] (devices) -- node[left, pos=0.3] {1:N} (poi_visits);
-
-        % Vzťahy - geofences
-        \draw[relation] (geofences) -- node[left] {1:N} (gf_events);
-        \draw[relation] (geofences) -- node[left] {1:N} (gf_state);
-
-        % Vzťahy - poi
-        \draw[relation] (poi) -- node[above] {1:N} (poi_visits);
-
-        % Legenda
-        \node[entity, minimum width=1.5cm, minimum height=0.5cm] at (6, 2) {};
-        \node[right] at (6.9, 2) {\small Regular};
-        \node[hypertable, minimum width=1.5cm, minimum height=0.5cm] at (6, 1.3) {};
-        \node[right] at (6.9, 1.3) {\small Hypertable};
-        \node[postgis, minimum width=1.5cm, minimum height=0.5cm] at (6, 0.6) {};
-        \node[right] at (6.9, 0.6) {\small PostGIS};
-    \end{tikzpicture}
+    \includegraphics[width=0.95\textwidth]{Figures/er_diagram.png}
     \caption{ER diagram databázovej schémy GPS tracking systému}
     \label{fig:er-diagram}
 \end{figure}
