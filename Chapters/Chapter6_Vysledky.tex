@@ -1,45 +1,22 @@
 \chapter{Dosažené výsledky v průběhu odborné praxe a její celkové zhodnocení}
 \label{sec:Vysledky}
 
-Počas šiestich mesiacov odbornej praxe som implementoval kompletný GPS tracking systém pokrývajúci celý životný cyklus dát -- od prijatia surových GPS súradníc z~LoRaWAN trackerov až po ich vizualizáciu v~interaktívnej webovej aplikácii. Systém zahŕňa real-time sledovanie pozícií, prehliadanie histórie pohybu, geofencing s~automatickými alertmi a~správu zariadení s~monitorovaním stavu batérie.
+Počas šiestich mesiacov odbornej praxe vo firme Railsformers s.r.o. som implementoval kompletný GPS tracking systém pre sledovanie osôb na eventoch. Projekt kombinoval DevOps technológie s~full-stack vývojom a~umožnil mi získať praktické skúsenosti s~modernými IoT riešeniami.
 
-\section{Feedback od mentora}
-\label{sec:Feedback}
+\section{Súhrn implementovanej funkcionality}
+\label{sec:SuhrnFunkcionality}
 
-Počas celej praxe som bol v~pravidelnom kontakte s~mentorom Bc.~Janom Mitorajom, ktorý mi poskytoval spätnú väzbu a~usmernenie. Jeho reakcie na jednotlivé fázy projektu boli pozitívne:
+Výsledkom praxe je funkčný systém pozostávajúci z~troch hlavných častí. Backend v~Pythone zabezpečuje príjem dát z~LoRaWAN siete cez MQTT protokol, ich parsovanie a~ukladanie do PostgreSQL databázy s~rozšíreniami TimescaleDB a~PostGIS. Frontend postavený na React frameworku poskytuje interaktívnu webovú aplikáciu s~mapovým rozhraním Leaflet.js.
 
-\begin{quotation}
-``Tvl to je úplně skvělé! Klobouk dolů! To bys obhájil i jako diplomku!''
-
-\hfill -- Bc.~Jan Mitoraj, po prezentácii frontend aplikácie
-\end{quotation}
-
-\begin{quotation}
-``Cool, to jsou věci na které jsem ani nemyslel.''
-
-\hfill -- reakcia na edge cases v~parseri (cold start, GPS drift)
-\end{quotation}
-
-\begin{quotation}
-``PostGIS a TimescaleDB v praktických záležitostech používáme celkem dost a ušetří ti to strašně moc práce.''
-
-\hfill -- odporúčanie technológií na začiatku projektu
-\end{quotation}
-
-Tieto reakcie potvrdili, že zvolený prístup a~implementované funkcie zodpovedajú reálnym požiadavkám a~štandardom používaným vo firme.
-
-\section{Čo by som urobil inak}
-\label{sec:CoJinak}
-
-S~odstupom času a~nadobudnutými skúsenosťami identifikujem niekoľko oblastí, kde by som postupoval odlišne. Väčšinu vývoja som realizoval so simulovanými GPS dátami, čo umožnilo rýchly iteratívny vývoj. Avšak niektoré edge cases, ako GPS drift pri slabom signáli alebo battery stuck bug, som objavil až pri testovaní s~reálnymi zariadeniami. Skoršia integrácia reálnych trackerov by tieto problémy odhalila skôr.
-
-Projekt aktuálne nemá formálnu test suite. Implementácia unit testov pre parser a~integration testov pre API by významne uľahčila refactoring a~pridávanie nových funkcionalít. Podobne by implementácia automatizovaného CI/CD pipeline zvýšila kvalitu kódu vďaka automatickým kontrolám pri každom commite.
-
-Retrospektívne písanie dokumentácie pre bakalársku prácu bolo náročnejšie, než by bolo priebežné dokumentovanie rozhodnutí. Odporúčam budúcim študentom viesť si denník vývoja s~poznámkami o~dôležitých rozhodnutiach a~ich zdôvodneniach.
+Systém podporuje tri režimy prevádzky -- real-time sledovanie pozícií s~WebSocket komunikáciou, prehliadanie histórie pohybu s~animovaným timeline sliderom a~heatmap vizualizáciou, a~geofencing modul s~automatickými alertmi pri vstupe, výstupe alebo dlhšom pobyte v~definovaných zónach. Súčasťou riešenia je aj správa zariadení s~monitorovaním stavu batérie a~systém Points of Interest využívajúci priestorové dotazy PostGIS.
 
 \section{Celkové zhodnotenie}
 \label{sec:CelkoveZhodnotenie}
 
-Napriek identifikovaným oblastiam na zlepšenie považujem projekt za úspešný. Podarilo sa mi implementovať funkčný GPS tracking systém, ktorý spĺňa všetky požiadavky zadania a~prináša praktickú hodnotu pre potenciálne využitie na eventoch. Získané skúsenosti s~IoT technológiami, time-series databázami a~real-time webovými aplikáciami sú cenným prínosom pre moju ďalšiu kariéru v~IT.
+Projekt splnil všetky ciele definované v~zadaní. Implementoval som popis odborného zamerania firmy a~pracovného zaradenia, dokumentoval zoznam úloh s~časovou náročnosťou a~podrobne popísal zvolený postup riešenia. V~predchádzajúcich kapitolách som zhodnotil uplatnené znalosti zo štúdia aj identifikoval oblasti, kde mi teoretická príprava chýbala.
+
+Z~osobného hľadiska bola prax nesmierne prínosná. Získal som praktické skúsenosti s~technológiami, ktoré som predtým nepoznal -- TimescaleDB pre prácu s~časovými radami, PostGIS pre geopriestorové operácie, LoRaWAN a~MQTT pre IoT komunikáciu. Naučil som sa pracovať na projekte od prvotného návrhu architektúry až po finálnu implementáciu, čo mi dalo komplexný pohľad na životný cyklus softvérového produktu.
+
+Spolupráca s~mentorom Bc.~Janom Mitorajom mi poskytla cenné usmernenie pri technických rozhodnutiach a~pomohla mi pochopiť štandardy a~praktiky používané v~komerčnom vývoji. Táto skúsenosť posilnila moje presvedčenie, že IoT a~full-stack vývoj sú oblasti, ktorým sa chcem venovať aj v~budúcej kariére.
 
 \endinput
