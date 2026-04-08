@@ -1,0 +1,101 @@
+services:
+  # ─── Database ───────────────────────────────────────────────────────────────
+  timescaledb:
+    image: timescale/timescaledb-ha:pg16
+    container_name: tracker-db
+    environment:
+      POSTGRES_DB: tracker_db
+      POSTGRES_USER: tracker_user
+      POSTGRES_PASSWORD: tracker_pass_2025
+      TIMESCALEDB_TELEMETRY: 'off'
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/data/postgres:/var/lib/postgresql/data
+      # Init schema + migrations run in alphabetical order automatically
+      - ./api/backend/database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./api/backend/database/migrations/001_geofencing.sql:/docker-entrypoint-initdb.d/02-geofencing.sql
+      - ./api/backend/database/migrations/002_optimize_geofence_analytics.sql:/docker-entrypoint-initdb.d/03-optimize.sql
+      - ./api/backend/database/migrations/003_device_tags.sql:/docker-entrypoint-initdb.d/04-tags.sql
+      - ./api/backend/database/migrations/004_poi.sql:/docker-entrypoint-initdb.d/05-poi.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracker_user -d tracker_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tracker-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── Backend API ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ./api/backend
+      dockerfile: Dockerfile
+    container_name: tracker-api
+    environment:
+      DB_HOST: timescaledb
+      DB_PORT: 5432
+      DB_NAME: tracker_db
+      DB_USER: tracker_user
+      DB_PASSWORD: tracker_pass_2025
+      ENABLE_MQTT: 'false'
+      DEBUG: 'false'
+      LOG_LEVEL: INFO
+      FLASK_PORT: 5000
+    ports:
+      - "5001:5000"
+    volumes:
+      # Mount source for live code reload (restart container to pick up changes)
+      - ./api/backend:/app
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─── Frontend ────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend/frontend
+      dockerfile: Dockerfile.dev
+    container_name: tracker-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount src for Vite HMR hot-reload
+      - ./frontend/frontend/src:/app/src
+      - ./frontend/frontend/public:/app/public
+      - ./frontend/frontend/index.html:/app/index.html
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ─── GPS Simulator (optional) ─────────────────────────────────────────────
+  simulator:
+    build:
+      context: ./simulator
+      dockerfile: Dockerfile
+    container_name: tracker-simulator
+    environment:
+      DB_HOST: timescaledb
+      DB_PORT: 5432
+      DB_NAME: tracker_db
+      DB_USER: tracker_user
+      DB_PASSWORD: tracker_pass_2025
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    profiles:
+      - simulator
+    restart: unless-stopped

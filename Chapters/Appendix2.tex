@@ -1,26 +1,29 @@
 \chapter{Ukážky zdrojového kódu}
 \label{sec:AppendixCode}
 
-% Táto príloha obsahuje dlhšie ukážky kódu, ktoré by narušili plynulosť hlavného textu.
+Táto príloha obsahuje kompletné ukážky kľúčových častí implementácie, ktoré by svojím rozsahom narušili plynulosť hlavného textu.
 
-\section{MQTT Parser - Kompletná implementácia}
+\section{MQTT Parser}
 \label{sec:AppendixParser}
 
-% TODO: Vložiť kompletný parser kód
-% \lstinputlisting[language=Python, caption={SenseCap Parser}]{SourceCodes/parser.py}
+Trieda \texttt{GPSParser} zodpovedá za spracovanie MQTT správ z~LoRaWAN brány a~extrakciu GPS súradníc z~payload dát trackerov SenseCap T1000-B.
+
+\lstinputlisting[language=Python, caption={Kompletná implementácia MQTT parsera}, label=src:parser]{SourceCodes/parser.py}
 
 
 \section{Docker Compose konfigurácia}
 \label{sec:AppendixDocker}
 
-% TODO: Vložiť docker-compose.yml
-% \lstinputlisting[language=yaml, caption={Docker Compose konfigurácia}]{SourceCodes/docker-compose.yml}
+Konfiguračný súbor pre orchestráciu všetkých služieb systému -- databázy TimescaleDB, pgAdmin nástroja, backend API a~React frontendu.
+
+\lstinputlisting[language=yaml, caption={Docker Compose konfigurácia vývojového prostredia}, label=src:docker]{SourceCodes/docker-compose.yml}
 
 
 \section{Databázová schéma}
 \label{sec:AppendixSchema}
 
-% TODO: Vložiť SQL schému
-% \lstinputlisting[language=SQL, caption={Databázová schéma}]{SourceCodes/schema.sql}
+Inicializačný SQL skript vytvárajúci databázovú štruktúru vrátane TimescaleDB hypertable, PostGIS rozšírenia, triggerov a~pomocných funkcií.
+
+\lstinputlisting[language=SQL, caption={Kompletná databázová schéma}, label=src:schema]{SourceCodes/schema.sql}
 
 \endinput
