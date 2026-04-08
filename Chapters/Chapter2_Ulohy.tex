@@ -48,7 +48,7 @@ Prvou úlohou bola konfigurácia LoRaWAN infraštruktúry -- gateway RAK7289 V2 
 \subsection{MQTT broker a~parser}
 \label{sec:UlohaMQTT}
 
-Druhá úloha sa zameriavala na pripojenie backendu k~MQTT brokeru \texttt{mqtt.hedurio.com} s~TLS šifrovaním a~implementáciu parsera pre dekódovanie správ z~trackerov. Parser spracováva formát SenseCap, ktorý obsahuje GPS súradnice, stav batérie, teplotu a~ďalšie telemetrické údaje vo formáte Base64/HEX. Súčasťou boli aj validácie pre edge cases ako GPS cold start či drift súradníc.
+Druhá úloha sa zameriavala na pripojenie backendu k~MQTT brokeru \texttt{mqtt.hedurio.com} s~TLS šifrovaním a~implementáciu parsera pre dekódovanie správ z~trackerov. Parser spracováva formát SenseCap, ktorý obsahuje GPS súradnice, stav batérie a~ďalšie telemetrické údaje vo formáte Base64/HEX. Súčasťou boli aj validácie pre edge cases ako GPS cold start či drift súradníc.
 
 \subsection{Návrh databázy}
 \label{sec:UlohaDB}
