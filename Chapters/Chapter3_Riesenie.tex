@@ -507,6 +507,18 @@ Po analýze požiadaviek (Tabuľka~\ref{tab:db-comparison}) a~konzultácii s~fir
 
 \subsubsection{Porovnanie databázových riešení}
 
+Hlavnými dôvodmi pre výber PostgreSQL s~rozšíreniami boli:
+
+\begin{itemize}
+    \item \textbf{Kombinácia time-series a~geospatial} -- Jediná možnosť, ktorá natívne podporuje obe funkcionality v~jednej databáze.
+
+    \item \textbf{SQL kompatibilita} -- Môžem používať štandardné SQL dotazy, ORM nástroje a~existujúce znalosti.
+
+    \item \textbf{Firemné skúsenosti} -- Tím má bohaté skúsenosti s~touto kombináciou z~predchádzajúcich projektov.
+
+    \item \textbf{Jeden databázový server} -- Nie je potrebné prevádzkovať samostatný time-series a~relačný server.
+\end{itemize}
+
 \begin{table}[htbp]
     \centering
     \begin{tabular}{|l|c|c|c|c|}
@@ -525,18 +537,6 @@ Po analýze požiadaviek (Tabuľka~\ref{tab:db-comparison}) a~konzultácii s~fir
     \caption{Porovnanie databázových riešení pre GPS tracking}
     \label{tab:db-comparison}
 \end{table}
-
-Hlavnými dôvodmi pre výber PostgreSQL s~rozšíreniami boli:
-
-\begin{itemize}
-    \item \textbf{Kombinácia time-series a~geospatial} -- Jediná možnosť, ktorá natívne podporuje obe funkcionality v~jednej databáze.
-
-    \item \textbf{SQL kompatibilita} -- Môžem používať štandardné SQL dotazy, ORM nástroje a~existujúce znalosti.
-
-    \item \textbf{Firemné skúsenosti} -- Tím má bohaté skúsenosti s~touto kombináciou z~predchádzajúcich projektov.
-
-    \item \textbf{Jeden databázový server} -- Nie je potrebné prevádzkovať samostatný time-series a~relačný server.
-\end{itemize}
 
 \subsection{TimescaleDB -- Časové Rady}
 \label{sec:TimescaleDB}
