@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LoRaWAN GPS Tracking System - Bakalárska práca 2026. Real-time sledovanie osôb na eventoch.">
+    <meta name="author" content="Tomáš Mucha — VŠB-TUO FEI 2026">
+    <meta name="theme-color" content="#3B82F6">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%233B82F6'/><circle cx='50' cy='50' r='20' fill='none' stroke='white' stroke-width='6'/><circle cx='50' cy='50' r='6' fill='white'/><line x1='50' y1='10' x2='50' y2='25' stroke='white' stroke-width='5' stroke-linecap='round'/><line x1='50' y1='75' x2='50' y2='90' stroke='white' stroke-width='5' stroke-linecap='round'/><line x1='10' y1='50' x2='25' y2='50' stroke='white' stroke-width='5' stroke-linecap='round'/><line x1='75' y1='50' x2='90' y2='50' stroke='white' stroke-width='5' stroke-linecap='round'/></svg>">
+    <title>LoRaWAN GPS Tracking System | Bakalárska Práca 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-light: #60A5FA;
+            --primary-dark: #2563EB;
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --accent: #06B6D4;
+            --accent-light: #22D3EE;
+            --accent-glow: rgba(6, 182, 212, 0.4);
+            --purple: #8B5CF6;
+            --purple-light: #A78BFA;
+            --dark: #0A0A0F;
+            --dark-card: rgba(18, 18, 26, 0.8);
+            --dark-card-solid: #12121A;
+            --dark-lighter: #1A1A25;
+            --dark-border: rgba(255, 255, 255, 0.08);
+            --white: #FFFFFF;
+            --gray: #9CA3AF;
+            --gray-light: #D1D5DB;
+            --red: #EF4444;
+            --red-light: #FCA5A5;
+            --yellow: #F59E0B;
+            --yellow-light: #FCD34D;
+            --green: #10B981;
+            --green-light: #6EE7B7;
+            --orange: #F97316;
+            --pink: #EC4899;
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--accent));
+            --gradient-purple: linear-gradient(135deg, var(--purple), var(--primary));
+            --gradient-warm: linear-gradient(135deg, var(--yellow), var(--red));
+            --gradient-dark: linear-gradient(180deg, var(--dark) 0%, #0D1117 100%);
+            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: var(--dark);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ==================== REDUCED MOTION ==================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        /* ==================== SVG ICON BASE ==================== */
+        .icon { display: inline-flex; align-items: center; justify-content: center; }
+        .icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+        .icon-sm svg { width: 18px; height: 18px; }
+        .icon-lg svg { width: 28px; height: 28px; }
+
+        /* ==================== NAVIGATION ==================== */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0.6rem 2rem;
+            background: rgba(10, 10, 15, 0.92);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav.scrolled { padding: 0.4rem 2rem; background: rgba(10, 10, 15, 0.9); }
+        .nav-logo { display: flex; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+        .nav-logo-icon {
+            width: 34px; height: 34px; background: var(--gradient-primary);
+            border-radius: 9px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 10px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .nav-logo-icon .icon svg { width: 18px; height: 18px; stroke: white; }
+        .nav-center {
+            display: flex; gap: 2px; background: rgba(255,255,255,0.06);
+            padding: 3px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04);
+        }
+        .nav-link {
+            color: var(--gray); text-decoration: none; font-weight: 500; font-size: 0.72rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); padding: 0.4rem 0.75rem; border-radius: 7px;
+            letter-spacing: 0.01em;
+        }
+        .nav-link:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+        .nav-link.active { color: var(--white); background: var(--primary); box-shadow: 0 2px 8px rgba(59,130,246,0.4); }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .nav-slide-counter { font-size: 0.78rem; color: var(--gray); font-weight: 600; font-variant-numeric: tabular-nums; }
+        .nav-slide-counter span { color: var(--primary-light); }
+        .nav-mucha {
+            display: flex; align-items: center; cursor: default;
+            opacity: 0.6; transition: opacity 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+        .nav-mucha:hover { opacity: 1; transform: translateY(-2px); }
+        .nav-mucha::after {
+            content: 'Tomáš Mucha'; position: absolute; bottom: -26px; right: 0;
+            font-size: 0.65rem; color: var(--gray); white-space: nowrap;
+            opacity: 0; transition: opacity 0.2s ease; pointer-events: none;
+            background: rgba(18,18,26,0.95); padding: 0.2rem 0.5rem;
+            border-radius: 6px; border: 1px solid var(--dark-border);
+        }
+        .nav-mucha:hover::after { opacity: 1; }
+
+        /* ==================== PARTICLES ==================== */
+        .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; contain: strict; }
+        .particle {
+            position: absolute; width: 3px; height: 3px;
+            background: var(--primary); border-radius: 50%; opacity: 0.5;
+            will-change: transform;
+            animation: particleFloat 20s infinite ease-in-out;
+        }
+        .particle:nth-child(odd)  { animation-duration: 26s; background: var(--accent); }
+        .particle:nth-child(3n)   { width: 6px; height: 6px; opacity: 0.55; }
+        .particle:nth-child(5n)   { width: 9px; height: 9px; opacity: 0.35; background: var(--purple); }
+        .particle:nth-child(7n)   { width: 5px; height: 5px; opacity: 0.45; background: var(--accent); }
+        .particle:nth-child(11n)  { width: 12px; height: 12px; opacity: 0.2; }
+
+        @keyframes particleFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(var(--px, 40px), var(--py, -140px)); }
+        }
+
+        /* ==================== SLIDE BASE ==================== */
+        .slide {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+            padding: 6rem 4rem 4rem; position: relative; overflow: hidden;
+            content-visibility: auto; contain-intrinsic-size: auto 100vh;
+        }
+        .slide-hero { content-visibility: visible; }
+        .slide:nth-child(odd)::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.03) 0%, transparent 60%);
+        }
+        .slide:nth-child(even)::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(ellipse at 20% 80%, rgba(6,182,212,0.03) 0%, transparent 60%);
+        }
+        .slide-inner { max-width: 1400px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+
+        /* ==================== HERO ==================== */
+        .slide-hero { background: var(--gradient-dark); text-align: center; justify-content: center; align-items: center; }
+        .hero-glow {
+            position: absolute; width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(59,130,246,0.13) 0%, transparent 70%);
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            will-change: opacity;
+            animation: heroGlow 7s ease-in-out infinite alternate;
+        }
+        .hero-glow-accent {
+            position: absolute; width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%);
+            top: 30%; left: 70%; transform: translate(-50%, -50%);
+            will-change: opacity;
+            animation: heroGlow 9s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes heroGlow {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.5rem 1.25rem; border-radius: 100px; font-size: 0.85rem;
+            color: var(--primary-light); margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease;
+        }
+        .hero-badge-dot {
+            width: 7px; height: 7px; background: var(--primary);
+            border-radius: 50%; animation: pulse 2s infinite;
+            box-shadow: 0 0 8px var(--primary);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.4); }
+        }
+        .hero-title {
+            font-size: clamp(2.8rem, 7vw, 5.5rem); font-weight: 800;
+            line-height: 1.05; margin-bottom: 1.5rem; animation: fadeInUp 0.8s ease 0.1s backwards;
+            letter-spacing: -0.03em;
+        }
+        .hero-title-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem; color: var(--gray); max-width: 650px;
+            margin: 0 auto 3rem; animation: fadeInUp 0.8s ease 0.2s backwards;
+            font-weight: 300; line-height: 1.7; letter-spacing: 0.01em;
+        }
+        .hero-stats {
+            display: flex; justify-content: center; gap: 1.5rem;
+            animation: fadeInUp 0.8s ease 0.3s backwards; flex-wrap: wrap;
+        }
+        .hero-stat {
+            text-align: center; padding: 1.25rem 1.75rem;
+            background: rgba(255,255,255,0.04);
+            border-radius: 18px; border: 1px solid rgba(255,255,255,0.06); min-width: 140px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .hero-stat:hover { border-color: rgba(59, 130, 246, 0.25); transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        .hero-stat-value {
+            font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-stat-label {
+            color: var(--gray); font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 0.12em; margin-top: 0.2rem; font-weight: 500;
+        }
+        .hero-scroll-indicator {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            color: var(--gray); font-size: 0.7rem; animation: bounce 2s infinite;
+            letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500;
+        }
+        .hero-scroll-indicator svg { width: 20px; height: 20px; stroke: var(--gray); }
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== SECTION HEADERS ==================== */
+        .section-header { margin-bottom: 3rem; }
+        .section-number {
+            display: inline-flex; align-items: center; gap: 0.75rem;
+            font-size: 0.75rem; color: var(--primary-light); font-weight: 600;
+            letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.75rem;
+        }
+        .section-number::before { content: ''; width: 32px; height: 2px; background: var(--gradient-primary); border-radius: 1px; }
+        .section-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; margin-bottom: 0.75rem; line-height: 1.15; letter-spacing: -0.03em; }
+        .section-subtitle { font-size: 1.05rem; color: var(--gray); max-width: 600px; line-height: 1.7; font-weight: 300; }
+
+        /* ==================== CARDS ==================== */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; }
+        .cards-grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 1200px) { .cards-grid-3, .cards-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .cards-grid-3, .cards-grid-2, .cards-grid-4 { grid-template-columns: 1fr; } .slide { padding: 5rem 1.5rem 2rem; } }
+
+        .card {
+            background: rgba(18, 18, 26, 0.92); border-radius: 24px; padding: 2rem;
+            border: 1px solid var(--dark-border);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease;
+            position: relative; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1);
+            transform: translateZ(0);
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--gradient-primary); transform: scaleX(0); transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        .card:hover {
+            transform: translateY(-6px); border-color: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 30px rgba(59,130,246,0.08);
+        }
+        .card:hover::before { transform: scaleX(1); }
+        .card:active { transform: translateY(-4px) scale(0.99); }
+        .card-icon {
+            width: 52px; height: 52px; background: var(--gradient-primary);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 15px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .card-icon .icon svg { stroke: white; width: 24px; height: 24px; }
+        .card-icon.accent { background: linear-gradient(135deg, #0E7490, #22D3EE); box-shadow: 0 4px 15px rgba(6,182,212,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+        .card-icon.purple { background: linear-gradient(135deg, #1E40AF, #818CF8); box-shadow: 0 4px 15px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+        .card-icon.green { background: linear-gradient(135deg, #0369A1, #38BDF8); box-shadow: 0 4px 15px rgba(56,189,248,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+        .card-icon.warm { background: linear-gradient(135deg, #1E3A5F, #60A5FA); box-shadow: 0 4px 15px rgba(96,165,250,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+        .card-icon.red { background: linear-gradient(135deg, #1E40AF, #3B82F6); box-shadow: 0 4px 15px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+        .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.6rem; letter-spacing: -0.01em; }
+        .card-description { color: var(--gray); font-size: 0.92rem; line-height: 1.7; }
+
+        /* ==================== FEATURE LIST ==================== */
+        .feature-list { list-style: none; margin-top: 0.75rem; }
+        .feature-list li {
+            display: flex; align-items: flex-start; gap: 0.6rem;
+            padding: 0.35rem 0; color: var(--gray-light); font-size: 0.88rem;
+        }
+        .feature-list li::before {
+            content: ''; flex-shrink: 0; width: 20px; height: 20px;
+            background: rgba(59, 130, 246, 0.12); border-radius: 6px;
+            margin-top: 2px;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%233B82F6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E");
+            background-size: 12px 12px; background-position: center; background-repeat: no-repeat;
+        }
+
+        /* ==================== STATS GRID ==================== */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+        @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card {
+            background: rgba(18, 18, 26, 0.92); border-radius: 20px; padding: 1.5rem;
+            text-align: center; border: 1px solid var(--dark-border); transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1); transform: translateZ(0);
+        }
+        .stat-card:hover { border-color: rgba(59, 130, 246, 0.2); transform: scale(1.03); }
+        .stat-value {
+            font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stat-label { color: var(--gray); font-size: 0.8rem; margin-top: 0.2rem; font-weight: 500; letter-spacing: 0.02em; }
+
+        /* ==================== PROGRESS BARS ==================== */
+        .progress-section { margin-top: 1.25rem; }
+        .progress-item { margin-bottom: 1rem; }
+        .progress-header { display: flex; justify-content: space-between; margin-bottom: 0.4rem; }
+        .progress-label { font-weight: 500; font-size: 0.88rem; }
+        .progress-value { color: var(--primary-light); font-weight: 700; font-size: 0.88rem; }
+        .progress-bar { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+        .progress-fill {
+            height: 100%; background: var(--gradient-primary); border-radius: 4px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); width: 0; position: relative;
+        }
+        .progress-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        /* ==================== LESSON CARDS ==================== */
+        .lessons-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        @media (max-width: 800px) { .lessons-grid { grid-template-columns: 1fr; } }
+        .lesson-card {
+            background: rgba(18, 18, 26, 0.92); border-radius: 18px; padding: 1.5rem;
+            border: 1px solid var(--dark-border);
+            border-left: 3px solid var(--primary-light); transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .lesson-card:hover { transform: translateX(4px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .lesson-card.problem { border-left-color: #818CF8; }
+        .lesson-card.warning { border-left-color: var(--accent); }
+        .lesson-card.info { border-left-color: var(--primary); }
+        .lesson-label {
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--primary-light); margin-bottom: 0.4rem; font-weight: 600;
+        }
+        .lesson-card.problem .lesson-label { color: #818CF8; }
+        .lesson-card.warning .lesson-label { color: var(--accent-light); }
+        .lesson-card.info .lesson-label { color: var(--primary-light); }
+        .lesson-title { font-weight: 700; margin-bottom: 0.4rem; font-size: 0.95rem; letter-spacing: -0.01em; }
+        .lesson-description { color: var(--gray); font-size: 0.85rem; line-height: 1.6; }
+
+        /* ==================== ARCHITECTURE LAYERS ==================== */
+        .arch-layers { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 2rem; }
+        .arch-layer {
+            display: flex; align-items: center; gap: 1.25rem; padding: 1rem 1.25rem;
+            background: rgba(18, 18, 26, 0.92); border-radius: 16px; border: 1px solid var(--dark-border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            opacity: 0; transform: translateX(-20px);
+        }
+        .arch-layer.visible { opacity: 1; transform: translateX(0); }
+        .arch-layer:hover { border-color: rgba(59, 130, 246, 0.2); transform: translateX(6px); }
+        .arch-layer-icon {
+            width: 44px; height: 44px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .arch-layer-icon .icon svg { stroke: white; width: 20px; height: 20px; }
+        .arch-layer-name { font-weight: 700; font-size: 0.95rem; min-width: 120px; letter-spacing: -0.01em; }
+        .arch-layer-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .arch-badge {
+            background: rgba(255,255,255,0.04); padding: 0.25rem 0.65rem; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 500; border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.3s ease;
+        }
+        .arch-badge:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.08); }
+
+        /* ==================== IMAGE SHOWCASE ==================== */
+        .screenshot-container {
+            border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-top: 1.5rem;
+            position: relative;
+        }
+        .screenshot-container:hover { transform: scale(1.01); box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(59,130,246,0.06); }
+        .screenshot-container img { width: 100%; height: auto; display: block; }
+        .screenshot-bar {
+            background: rgba(30,30,40,0.95); padding: 0.6rem 1rem; display: flex;
+            align-items: center; gap: 0.4rem;
+        }
+        .screenshot-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .screenshot-dot.red { background: #FF5F56; }
+        .screenshot-dot.yellow { background: #FFBD2E; }
+        .screenshot-dot.green { background: #27C93F; }
+        .screenshot-title { color: var(--gray); font-size: 0.75rem; margin-left: 0.5rem; font-weight: 500; flex: 1; text-align: center; }
+
+        /* Caption bar pod screenshotom */
+        .screenshot-caption {
+            background: rgba(20,20,30,0.95); padding: 0.75rem 1rem;
+            display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .caption-pill {
+            background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.15);
+            padding: 0.25rem 0.65rem; border-radius: 100px; font-size: 0.72rem;
+            color: var(--primary-light); font-weight: 500; letter-spacing: 0.02em;
+        }
+
+        /* Callout annotations */
+        .screenshot-body { position: relative; }
+        .callout {
+            position: absolute; display: flex; align-items: center; gap: 0.35rem;
+            background: rgba(10,10,15,0.88);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+            padding: 0.3rem 0.6rem; font-size: 0.68rem; font-weight: 600;
+            color: var(--white); white-space: nowrap; pointer-events: none; z-index: 5;
+            opacity: 0; transform: translateY(4px); transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .callout.visible { opacity: 1; transform: translateY(0); }
+        .callout::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--primary); box-shadow: 0 0 6px var(--primary);
+            flex-shrink: 0;
+        }
+        .callout.accent::before { background: #22D3EE; box-shadow: 0 0 6px #22D3EE; }
+        .callout.green::before { background: #38BDF8; box-shadow: 0 0 6px #38BDF8; }
+        .callout.yellow::before { background: #818CF8; box-shadow: 0 0 6px #818CF8; }
+        @media (max-width: 768px) { .callout { display: none; } }
+
+        .screenshots-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-top: 1.5rem; }
+        @media (max-width: 900px) { .screenshots-grid { grid-template-columns: 1fr; } }
+
+        /* ==================== COMPARISON TABLE ==================== */
+        .comparison-table {
+            width: 100%; border-collapse: separate; border-spacing: 0;
+            background: var(--dark-card-solid); border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--dark-border); margin-top: 1.25rem;
+        }
+        .comparison-table th {
+            background: rgba(255,255,255,0.03); padding: 0.85rem 1.25rem; text-align: left;
+            font-weight: 600; font-size: 0.8rem; color: var(--gray-light);
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .comparison-table th.highlight { color: var(--primary-light); }
+        .comparison-table td {
+            padding: 0.75rem 1.25rem; border-top: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.88rem; color: var(--gray-light);
+        }
+        .comparison-table tr:hover td { background: rgba(59, 130, 246, 0.03); }
+        .check { color: var(--green); font-weight: 700; }
+        .cross { color: var(--red); font-weight: 700; }
+
+        /* ==================== DONUT CHARTS ==================== */
+        .charts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+        @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+        .chart-card {
+            background: rgba(18, 18, 26, 0.92); border-radius: 24px; padding: 2rem;
+            border: 1px solid var(--dark-border); text-align: center; transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .chart-card:hover { border-color: rgba(59, 130, 246, 0.2); transform: translateY(-4px); }
+        .donut-chart {
+            width: 130px; height: 130px; border-radius: 50%; margin: 0 auto 1rem;
+            position: relative; display: flex; align-items: center; justify-content: center;
+        }
+        .donut-chart-inner {
+            width: 85px; height: 85px; background: var(--dark-card-solid); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 800; z-index: 1; letter-spacing: -0.02em;
+        }
+        .chart-label { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .chart-sublabel { color: var(--gray); font-size: 0.82rem; }
+
+        /* ==================== HORIZONTAL BAR CHART ==================== */
+        .h-bar-chart { margin-top: 1.5rem; }
+        .h-bar-item {
+            display: grid; grid-template-columns: 90px 1fr 55px; align-items: center; gap: 0.75rem;
+            padding: 0.4rem 0;
+        }
+        .h-bar-label { font-size: 0.82rem; font-weight: 600; color: var(--gray-light); text-align: right; }
+        .h-bar-track { height: 28px; background: rgba(255,255,255,0.04); border-radius: 8px; overflow: hidden; position: relative; }
+        .h-bar-fill {
+            height: 100%; border-radius: 8px; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0; position: relative; display: flex; align-items: center; justify-content: flex-end;
+            padding-right: 0.5rem; min-width: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .h-bar-fill::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent 60%, rgba(255,255,255,0.15));
+            border-radius: 8px;
+        }
+        .h-bar-value { font-size: 0.82rem; font-weight: 700; color: var(--gray-light); font-variant-numeric: tabular-nums; }
+        .h-bar-total {
+            margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex; justify-content: space-between; align-items: baseline;
+        }
+        .h-bar-total-label { font-size: 0.85rem; color: var(--gray); font-weight: 500; }
+        .h-bar-total-value {
+            font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* ==================== ANIMATED FLOW DIAGRAM ==================== */
+        .flow-container { display: flex; align-items: center; justify-content: center; gap: 0; margin-top: 2rem; flex-wrap: wrap; }
+        .flow-node {
+            background: rgba(18, 18, 26, 0.92); border: 1px solid var(--dark-border); border-radius: 16px;
+            padding: 0.85rem 1.25rem; text-align: center; min-width: 110px;
+            transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .flow-node:hover { border-color: rgba(59,130,246,0.3); transform: scale(1.06); box-shadow: 0 6px 20px rgba(0,0,0,0.25), 0 0 15px rgba(59,130,246,0.08); }
+        .flow-node-icon { margin-bottom: 0.35rem; display: flex; justify-content: center; }
+        .flow-node-icon .icon svg { width: 26px; height: 26px; stroke: var(--primary-light); }
+        .flow-node-label { font-size: 0.78rem; font-weight: 700; letter-spacing: -0.01em; }
+        .flow-node-sub { font-size: 0.65rem; color: var(--gray); margin-top: 0.15rem; }
+
+        .flow-arrow {
+            display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
+            padding: 0 0.35rem; position: relative; min-width: 60px;
+        }
+        .flow-arrow-line {
+            width: 100%; height: 2px; background: rgba(59,130,246,0.2); position: relative; overflow: hidden;
+            border-radius: 1px;
+        }
+        .flow-arrow-dot {
+            position: absolute; width: 8px; height: 8px; background: var(--primary);
+            border-radius: 50%; top: -3px; left: -8px;
+            box-shadow: 0 0 8px var(--primary);
+            will-change: left;
+            animation: dataFlow 2.8s infinite linear;
+        }
+        .flow-arrow-label {
+            font-size: 0.6rem; color: var(--gray); font-weight: 500; letter-spacing: 0.05em;
+            text-transform: uppercase; white-space: nowrap;
+        }
+        @keyframes dataFlow {
+            0% { left: -8px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: calc(100%); opacity: 0; }
+        }
+
+        /* ==================== FINAL SLIDE ==================== */
+        .final-card {
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 40%, #0E7490 100%);
+            border-radius: 24px; padding: 3.5rem 3rem;
+            text-align: center; position: relative; overflow: hidden;
+            border: 1px solid rgba(59,130,246,0.15);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 60px rgba(59,130,246,0.1);
+        }
+        .final-card::before {
+            content: ''; position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(6,182,212,0.12) 0%, transparent 50%);
+        }
+        .final-card::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(59,130,246,0.04) 60deg, transparent 120deg, rgba(6,182,212,0.04) 180deg, transparent 240deg, rgba(129,140,248,0.04) 300deg, transparent 360deg);
+            animation: finalRotate 20s linear infinite;
+        }
+        @keyframes finalRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .final-icon {
+            width: 64px; height: 64px; margin: 0 auto 1.5rem;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 1;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .final-icon svg { width: 28px; height: 28px; stroke: #60A5FA; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+        .final-title {
+            font-size: 1.8rem; font-weight: 800; margin-bottom: 0.6rem;
+            position: relative; z-index: 1; letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff 0%, #93C5FD 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .final-subtitle {
+            font-size: 1rem; max-width: 550px; margin: 0 auto; position: relative; z-index: 1;
+            font-weight: 300; line-height: 1.7;
+            color: rgba(255,255,255,0.7);
+        }
+        .final-divider {
+            width: 60px; height: 2px; margin: 1.25rem auto;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent);
+            position: relative; z-index: 1;
+        }
+        /* ==================== 3D PIE + RADAR CHARTS ==================== */
+        .charts-duo {
+            display: grid; grid-template-columns: 3fr 2fr; gap: 1.4rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 900px) { .charts-duo { grid-template-columns: 1fr; } }
+        .chart-panel {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(59,130,246,0.1);
+            border-radius: 20px; padding: 1.1rem 1.3rem 0.6rem;
+            transition: border-color 0.3s;
+        }
+        .chart-panel:hover { border-color: rgba(59,130,246,0.22); }
+        .chart-panel-title {
+            font-size: 0.75rem; font-weight: 700; color: var(--gray);
+            letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 0.4rem;
+        }
+        .chart-panel svg { display: block; width: 100%; height: auto; }
+        /* Pie segment fade-in */
+        .pie-seg { opacity: 0; transition: opacity 0.4s ease; }
+        .pie-seg.pie-visible { opacity: 1; }
+        /* Radar animation */
+        .radar-polygon {
+            stroke-dasharray: 1200; stroke-dashoffset: 1200;
+            transition: stroke-dashoffset 1.6s cubic-bezier(0.4,0,0.2,1);
+        }
+        .radar-polygon.radar-visible { stroke-dashoffset: 0; }
+        .radar-area { opacity: 0; transition: opacity 0.8s ease 0.4s; }
+        .radar-area.radar-visible { opacity: 1; }
+        /* Callout line draw-in */
+        .callout-line { stroke-dasharray: 120; stroke-dashoffset: 120; transition: stroke-dashoffset 0.5s ease; }
+        .callout-line.c-visible { stroke-dashoffset: 0; }
+        .callout-label { opacity: 0; transition: opacity 0.4s ease; }
+        .callout-label.c-visible { opacity: 1; }
+
+        .final-badges {
+            margin-top: 1.5rem; position: relative; z-index: 1;
+            display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+        }
+        .final-badge {
+            background: rgba(255,255,255,0.06);
+            padding: 0.45rem 1.15rem; border-radius: 100px; font-weight: 600; font-size: 0.82rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease; letter-spacing: 0.01em;
+        }
+        .final-badge:hover { background: rgba(255,255,255,0.12); border-color: rgba(59,130,246,0.3); transform: translateY(-2px); }
+        .final-stats {
+            display: flex; gap: 2.5rem; justify-content: center; margin-top: 1.5rem;
+            position: relative; z-index: 1;
+        }
+        .final-stat { text-align: center; }
+        .final-stat-value { font-size: 1.5rem; font-weight: 800; color: #60A5FA; }
+        .final-stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
+
+        /* ==================== SCROLL ANIMATIONS ==================== */
+        .animate-on-scroll { opacity: 0; transform: translateY(25px); transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+        .animate-on-scroll:nth-child(2) { transition-delay: 0.08s; }
+        .animate-on-scroll:nth-child(3) { transition-delay: 0.16s; }
+        .animate-on-scroll:nth-child(4) { transition-delay: 0.24s; }
+        /* ==================== 3D TILT ON CARDS ==================== */
+        .card-tilt { transform-style: preserve-3d; perspective: 800px; }
+        .card-tilt .card-tilt-inner { transition: transform 0.15s ease-out; }
+        .card-tilt .card-tilt-shine {
+            position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.06) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.3s ease; z-index: 2;
+        }
+        .card-tilt:hover .card-tilt-shine { opacity: 1; }
+
+        /* ==================== ANIMATED GRADIENT HERO TITLE ==================== */
+        .hero-title-gradient {
+            background: linear-gradient(135deg, #3B82F6, #06B6D4, #818CF8, #3B82F6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            animation: gradientShift 6s ease-in-out infinite;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ==================== TYPING EFFECT ==================== */
+        .typing-cursor::after {
+            content: '|'; color: var(--primary-light); font-weight: 300;
+            animation: blink 0.8s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* ==================== ANIMATED MESH GRADIENT BG ==================== */
+        .mesh-bg {
+            position: fixed; inset: 0; z-index: -1; overflow: hidden;
+        }
+        .mesh-blob {
+            position: absolute; border-radius: 50%; opacity: 0.06;
+            will-change: transform;
+            animation: meshFloat 45s ease-in-out infinite;
+        }
+        .mesh-blob:nth-child(1) { width: 600px; height: 600px; background: radial-gradient(circle, #3B82F6 0%, transparent 70%); top: -10%; left: -5%; }
+        .mesh-blob:nth-child(2) { width: 500px; height: 500px; background: radial-gradient(circle, #06B6D4 0%, transparent 70%); top: 40%; right: -10%; animation-delay: -15s; animation-duration: 55s; }
+        .mesh-blob:nth-child(3) { display: none; }
+        .mesh-blob:nth-child(4) { display: none; }
+        @keyframes meshFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(60px, -50px); }
+        }
+
+        /* ==================== MAGNETIC HOVER ==================== */
+        .magnetic { transition: transform 0.2s ease-out; display: inline-block; }
+
+        /* ==================== TIMELINE ==================== */
+        .timeline-container { margin-top: 2rem; position: relative; padding: 1rem 0; }
+        .timeline-track {
+            display: flex; align-items: center; position: relative;
+            padding: 0 1rem;
+        }
+        .timeline-line {
+            position: absolute; left: 1rem; right: 1rem; top: 50%; height: 2px;
+            background: rgba(255,255,255,0.06); transform: translateY(-50%);
+        }
+        .timeline-line-fill {
+            height: 100%; width: 0; background: var(--gradient-primary);
+            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(59,130,246,0.3);
+        }
+        .timeline-nodes { display: flex; justify-content: space-between; width: 100%; position: relative; z-index: 1; }
+        .timeline-node {
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .timeline-node.visible { opacity: 1; transform: translateY(0); }
+        .timeline-node-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: var(--dark-card-solid); border: 2px solid rgba(255,255,255,0.15);
+            transition: all 0.4s ease; position: relative;
+            box-shadow: 0 0 0 4px var(--dark);
+        }
+        .timeline-node.active .timeline-node-dot {
+            border-color: var(--primary); background: var(--primary);
+            box-shadow: 0 0 0 4px var(--dark), 0 0 15px rgba(59,130,246,0.4);
+        }
+        .timeline-node-date {
+            font-size: 0.7rem; font-weight: 600; color: var(--gray);
+            letter-spacing: 0.05em; white-space: nowrap;
+        }
+        .timeline-node.active .timeline-node-date { color: var(--primary-light); }
+        .timeline-node-label {
+            font-size: 0.72rem; font-weight: 500; color: var(--gray);
+            text-align: center; max-width: 90px; line-height: 1.3;
+        }
+        .timeline-node.active .timeline-node-label { color: var(--white); font-weight: 600; }
+        @media (max-width: 768px) {
+            .timeline-node-label { font-size: 0.6rem; max-width: 60px; }
+            .timeline-node-date { font-size: 0.6rem; }
+        }
+
+        /* ==================== RADAR PULSE (HERO) ==================== */
+        .radar {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 500px; height: 500px; pointer-events: none;
+        }
+        .radar-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 1px solid rgba(59,130,246,0.15);
+            will-change: transform, opacity;
+            animation: radarPulse 6s ease-out infinite;
+            opacity: 0;
+        }
+        .radar-ring:nth-child(2) { animation-delay: 1.5s; }
+        .radar-ring:nth-child(3) { animation-delay: 3s; }
+        .radar-ring:nth-child(4) { animation-delay: 4.5s; }
+        .radar-dot {
+            position: absolute; top: 50%; left: 50%; width: 8px; height: 8px;
+            background: var(--primary); border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px var(--primary-glow), 0 0 6px var(--primary);
+        }
+        .radar-crosshair {
+            position: absolute; inset: 0;
+        }
+        .radar-crosshair line {
+            stroke: rgba(59,130,246,0.08); stroke-width: 1;
+        }
+        @keyframes radarPulse {
+            0% { transform: scale(0.15); opacity: 0.6; border-color: rgba(59,130,246,0.3); }
+            100% { transform: scale(1); opacity: 0; border-color: rgba(59,130,246,0); }
+        }
+
+        /* ==================== LORA SIGNAL WAVES (HW) ==================== */
+        .signal-demo {
+            display: flex; align-items: center; justify-content: center; gap: 0;
+            margin-top: 1.5rem; padding: 2rem 1rem;
+            background: rgba(18,18,26,0.92); border-radius: 20px;
+            border: 1px solid var(--dark-border); position: relative; overflow: hidden;
+        }
+        .signal-device {
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            z-index: 2; min-width: 80px;
+        }
+        .signal-device-icon {
+            width: 48px; height: 48px; border-radius: 14px; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .signal-device-label { font-size: 0.75rem; font-weight: 600; color: var(--gray-light); text-align: center; }
+        .signal-device-sub { font-size: 0.65rem; color: var(--gray); }
+        .signal-waves {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            position: relative; height: 80px; min-width: 120px; max-width: 300px;
+        }
+        .signal-wave {
+            position: absolute; width: 40px; height: 40px; border-radius: 50%;
+            border: 1.5px solid rgba(59,130,246,0.3);
+            will-change: transform, opacity;
+            animation: signalExpand 3.5s ease-out infinite;
+            opacity: 0;
+        }
+        .signal-wave:nth-child(2) { animation-delay: 0.7s; }
+        .signal-wave:nth-child(3) { animation-delay: 1.4s; }
+        .signal-wave:nth-child(4) { animation-delay: 2.1s; }
+        .signal-wave:nth-child(5) { animation-delay: 2.8s; }
+        .signal-info {
+            position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+            font-size: 0.65rem; color: var(--primary-light); font-weight: 600;
+            letter-spacing: 0.05em; white-space: nowrap;
+            background: rgba(18,18,26,0.95); padding: 0.15rem 0.5rem; border-radius: 4px;
+        }
+        @keyframes signalExpand {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(5); opacity: 0; }
+        }
+
+        /* ==================== CODE SNIPPET (BACKEND) ==================== */
+        .code-block {
+            background: #0D1117; border-radius: 14px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06); margin-top: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+        }
+        .code-header {
+            background: rgba(255,255,255,0.04); padding: 0.5rem 1rem;
+            display: flex; align-items: center; gap: 0.4rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .code-header-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .code-header-title { color: var(--gray); font-size: 0.7rem; margin-left: 0.4rem; font-weight: 500; }
+        .code-body {
+            padding: 1rem 1.25rem; font-size: 0.75rem; line-height: 1.6;
+            overflow-x: auto; white-space: pre; color: #C9D1D9;
+        }
+        .code-body .kw { color: #FF7B72; }
+        .code-body .fn { color: #D2A8FF; }
+        .code-body .str { color: #A5D6FF; }
+        .code-body .cm { color: #8B949E; font-style: italic; }
+        .code-body .num { color: #79C0FF; }
+        .code-body .var { color: #FFA657; }
+        .code-body .op { color: #FF7B72; }
+        .code-line {
+            display: block; opacity: 0; transform: translateX(-8px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .code-line.visible { opacity: 1; transform: translateX(0); }
+
+        /* ==================== ANIMATED PIPELINE ==================== */
+        .pipe-steps { display: flex; flex-direction: column; gap: 0; flex: 1; }
+        .pipe-step {
+            display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 0;
+            opacity: 0; transform: translateY(8px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .pipe-step.pipe-visible { opacity: 1; transform: translateY(0); }
+        .pipe-icon {
+            width: 40px; height: 40px; border-radius: 11px; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .pipe-content { flex: 1; min-width: 0; }
+        .pipe-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.15rem; }
+        .pipe-data { font-size: 0.74rem; color: var(--gray); font-family: 'SF Mono', 'Fira Code', monospace; line-height: 1.5; }
+        .pipe-tag { color: var(--primary-light); font-weight: 600; }
+        .pipe-connector {
+            width: 2px; height: 100%; flex: 1; min-height: 16px; margin-left: 19px;
+            background: rgba(255,255,255,0.06); position: relative; overflow: hidden;
+        }
+        .pipe-connector-fill {
+            width: 100%; height: 0; background: var(--gradient-primary);
+            transition: height 0.4s ease; box-shadow: 0 0 6px var(--primary-glow);
+        }
+        .pipe-step.pipe-visible + .pipe-connector .pipe-connector-fill { height: 100%; }
+
+        /* ==================== STAT COUNTER ANIMATION ==================== */
+        .stat-value[data-count] { font-variant-numeric: tabular-nums; }
+
+        /* ==================== STAGGERED CARD REVEAL ==================== */
+        .cards-grid .card, .cards-grid-4 .card, .lessons-grid .lesson-card, .charts-grid .chart-card {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cards-grid .card.card-visible, .cards-grid-4 .card.card-visible,
+        .lessons-grid .lesson-card.card-visible, .charts-grid .chart-card.card-visible {
+            opacity: 1; transform: translateY(0);
+        }
+
+        /* ==================== SF + CHALLENGE CHART ANIMATIONS ==================== */
+        .sf-line { stroke-dasharray: 700; stroke-dashoffset: 700; transition: stroke-dashoffset 1.6s cubic-bezier(0.4,0,0.2,1); }
+        .sf-line.sf-visible { stroke-dashoffset: 0; }
+        .sf-dot { opacity: 0; transition: opacity 0.3s ease; }
+        .sf-dot.sf-visible { opacity: 1; }
+        .chal-bubble { transform: scale(0); transform-box: fill-box; transform-origin: center;
+            transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+        .chal-bubble.ch-visible { transform: scale(1); }
+        .chal-label { opacity: 0; transition: opacity 0.3s ease 0.2s; }
+        .chal-label.ch-visible { opacity: 1; }
+
+        /* ==================== DONUT CHART ANIMATION ==================== */
+        .donut-chart {
+            --donut-to: 0%;
+            background: conic-gradient(var(--donut-color, var(--primary)) 0% var(--donut-to), rgba(255,255,255,0.04) var(--donut-to) 100%) !important;
+            transition: --donut-to 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @property --donut-to {
+            syntax: '<percentage>';
+            inherits: false;
+            initial-value: 0%;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- MESH GRADIENT BACKGROUND -->
+<div class="mesh-bg">
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+</div>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+    <div class="nav-logo">
+        <div class="nav-logo-icon">
+            <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><path d="M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" opacity="0.5"/></svg></span>
+        </div>
+        <span>GPS Tracker</span>
+    </div>
+    <div class="nav-center">
+        <a href="#hero" class="nav-link active">Úvod</a>
+        <a href="#overview" class="nav-link">Projekt</a>
+        <a href="#tech" class="nav-link">Tech</a>
+        <a href="#hardware" class="nav-link">HW</a>
+        <a href="#backend" class="nav-link">Backend</a>
+        <a href="#live" class="nav-link">Live</a>
+        <a href="#historical" class="nav-link">Historical</a>
+        <a href="#geofencing" class="nav-link">Geo</a>
+        <a href="#challenges" class="nav-link">Výzvy</a>
+        <a href="#results" class="nav-link">Výsledky</a>
+    </div>
+    <div class="nav-right">
+        <div class="nav-mucha" title="Tomáš Mucha">
+            <svg viewBox="0 0 32 32" width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- telo -->
+                <ellipse cx="16" cy="20" rx="4" ry="5.5" fill="rgba(96,165,250,0.55)"/>
+                <!-- hlava -->
+                <ellipse cx="16" cy="13" rx="2.8" ry="3" fill="rgba(147,197,253,0.5)"/>
+                <!-- ľavé krídlo -->
+                <ellipse cx="9.5" cy="15" rx="5" ry="2.5" transform="rotate(-20 9.5 15)" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.4)" stroke-width="0.6">
+                    <animateTransform attributeName="transform" type="rotate" values="-20 9.5 15;-10 9.5 15;-20 9.5 15" dur="0.18s" repeatCount="indefinite"/>
+                </ellipse>
+                <!-- pravé krídlo -->
+                <ellipse cx="22.5" cy="15" rx="5" ry="2.5" transform="rotate(20 22.5 15)" fill="rgba(59,130,246,0.22)" stroke="rgba(59,130,246,0.4)" stroke-width="0.6">
+                    <animateTransform attributeName="transform" type="rotate" values="20 22.5 15;10 22.5 15;20 22.5 15" dur="0.18s" repeatCount="indefinite"/>
+                </ellipse>
+                <!-- oči -->
+                <circle cx="15" cy="12.5" r="0.8" fill="rgba(186,230,253,0.9)"/>
+                <circle cx="17" cy="12.5" r="0.8" fill="rgba(186,230,253,0.9)"/>
+                <!-- tykadlá -->
+                <line x1="14.5" y1="10.5" x2="12.5" y2="8.5" stroke="rgba(147,197,253,0.6)" stroke-width="0.7" stroke-linecap="round"/>
+                <line x1="17.5" y1="10.5" x2="19.5" y2="8.5" stroke="rgba(147,197,253,0.6)" stroke-width="0.7" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="nav-slide-counter"><span id="currentSlide">01</span> / 10</div>
+    </div>
+</nav>
+
+<!-- ==================== SLIDE 1: HERO ==================== -->
+<section class="slide slide-hero" id="hero" data-slide="1">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-accent"></div>
+    <div class="radar">
+        <svg class="radar-crosshair" viewBox="0 0 500 500"><line x1="250" y1="0" x2="250" y2="500"/><line x1="0" y1="250" x2="500" y2="250"/><circle cx="250" cy="250" r="120" fill="none" stroke="rgba(59,130,246,0.05)" stroke-width="1"/></svg>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-ring"></div>
+        <div class="radar-dot"></div>
+    </div>
+    <div class="slide-inner" style="text-align: center;">
+        <div class="hero-badge">
+            <div class="hero-badge-dot"></div>
+            Bakalárska Práca 2026 — VŠB-TUO FEI
+        </div>
+        <h1 class="hero-title">
+            <span class="hero-title-gradient">LoRaWAN GPS</span><br>
+            Tracking System
+        </h1>
+        <p class="hero-subtitle">
+            Real-time sledovanie osôb na eventoch pomocou IoT technológií.<br>
+            Kompletný full-stack systém od hardvéru po frontend.
+        </p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-value" data-count="370">0</div>
+                <div class="hero-stat-label">Hodín práce</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" data-count="8">0</div>
+                <div class="hero-stat-label">Technológií</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" data-count="13">0</div>
+                <div class="hero-stat-label">API Endpointov</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value" data-count="8">0</div>
+                <div class="hero-stat-label">DB Tabuliek</div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll-indicator">
+        <span>Scrolluj nadol ↓</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 2: PREHLAD ==================== -->
+<section class="slide" id="overview" data-slide="2">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">01 / Prehľad Projektu</div>
+            <h2 class="section-title">Čo som vytvoril</h2>
+            <p class="section-subtitle">IoT systém pre tracking osôb pomocou GPS trackerov komunikujúcich cez LoRaWAN protokol. Od hardvéru až po používateľské rozhranie.</p>
+        </div>
+
+        <div class="cards-grid cards-grid-3 animate-on-scroll">
+            <div class="card">
+                <div class="card-icon">
+                    <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+                </div>
+                <div class="card-title">Motivácia</div>
+                <div class="card-description">Organizátori eventov potrebujú vedieť kde sa nachádzajú ich ľudia — security, staff, VIP hostia. Existujúce riešenia sú drahé alebo vyžadujú mobilné telefóny.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon accent">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+                </div>
+                <div class="card-title">Riešenie</div>
+                <div class="card-description">Kompaktné GPS trackery (veľkosť kľúčenky) komunikujúce cez LoRaWAN s dosahom až 15 km. Real-time vizualizácia na webovej mape s geofencingom a alertmi.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon purple">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 9 7 12 7s5-3 7.5-3a2.5 2.5 0 010 5H18"/><path d="M18 15h1.5a2.5 2.5 0 010 5C17 20 15 17 12 17s-5 3-7.5 3a2.5 2.5 0 010-5H6"/><line x1="12" y1="7" x2="12" y2="17"/></svg></span>
+                </div>
+                <div class="card-title">Výsledok</div>
+                <div class="card-description">Funkčný prototyp pokrývajúci celý stack — HW konfigurácia, MQTT parser, PostgreSQL s TimescaleDB a PostGIS, Flask API, React frontend s Leaflet mapami.</div>
+            </div>
+        </div>
+
+        <div class="stats-grid animate-on-scroll">
+            <div class="stat-card">
+                <div class="stat-value">6</div>
+                <div class="stat-label">Mesiacov vývoja</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">~370h</div>
+                <div class="stat-label">Odpracovaných</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Dielčích úloh</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">&lt;2s</div>
+                <div class="stat-label">Latencia tracking</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 3: TECHNOLOGIE ==================== -->
+<section class="slide" id="tech" data-slide="3">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">02 / Technologický Stack</div>
+            <h2 class="section-title">Architektúra systému</h2>
+            <p class="section-subtitle">6 vrstiev, 8+ technológií — od rádiových signálov po React komponenty.</p>
+        </div>
+
+        <!-- Animated Data Flow -->
+        <div class="flow-container animate-on-scroll">
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span></div>
+                <div class="flow-node-label">GPS Tracker</div>
+                <div class="flow-node-sub">SenseCap T1000-B</div>
+            </div>
+            <div class="flow-arrow">
+                <div class="flow-arrow-line"><div class="flow-arrow-dot" style="animation-delay: 0s;"></div></div>
+                <div class="flow-arrow-label">LoRaWAN</div>
+            </div>
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 22V4c0-1 1-2 2-2h12c1 0 2 1 2 2v18l-4-2-4 2-4-2-4 2z"/><path d="M9 10h6M9 14h4" opacity="0.5"/></svg></span></div>
+                <div class="flow-node-label">LoRaWAN GW</div>
+                <div class="flow-node-sub">RAK7289 V2</div>
+            </div>
+            <div class="flow-arrow">
+                <div class="flow-arrow-line"><div class="flow-arrow-dot" style="animation-delay: 0.4s;"></div></div>
+                <div class="flow-arrow-label">MQTT/TLS</div>
+            </div>
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></span></div>
+                <div class="flow-node-label">MQTT Broker</div>
+                <div class="flow-node-sub">TLS 8883</div>
+            </div>
+            <div class="flow-arrow">
+                <div class="flow-arrow-line"><div class="flow-arrow-dot" style="animation-delay: 0.8s;"></div></div>
+                <div class="flow-arrow-label">Python</div>
+            </div>
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 8h10M7 12h6M7 16h8" opacity="0.5"/></svg></span></div>
+                <div class="flow-node-label">Flask API</div>
+                <div class="flow-node-sub">Parser + REST</div>
+            </div>
+            <div class="flow-arrow">
+                <div class="flow-arrow-line"><div class="flow-arrow-dot" style="animation-delay: 1.2s;"></div></div>
+                <div class="flow-arrow-label">SQL</div>
+            </div>
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span></div>
+                <div class="flow-node-label">PostgreSQL</div>
+                <div class="flow-node-sub">Timescale + PostGIS</div>
+            </div>
+            <div class="flow-arrow">
+                <div class="flow-arrow-line"><div class="flow-arrow-dot" style="animation-delay: 1.6s;"></div></div>
+                <div class="flow-arrow-label">WebSocket</div>
+            </div>
+            <div class="flow-node">
+                <div class="flow-node-icon"><span class="icon"><svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span></div>
+                <div class="flow-node-label">React + Leaflet</div>
+                <div class="flow-node-sub">Frontend</div>
+            </div>
+        </div>
+
+        <!-- Architecture Layers -->
+        <div class="arch-layers animate-on-scroll" id="archLayers" style="margin-top: 2.5rem;">
+            <div class="arch-layer" style="transition-delay: 0s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #1E40AF, #3B82F6);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></span>
+                </div>
+                <div class="arch-layer-name">Hardware</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">SenseCap T1000-B</span>
+                    <span class="arch-badge magnetic">RAK7289 V2 Gateway</span>
+                    <span class="arch-badge magnetic">EU868 MHz</span>
+                </div>
+            </div>
+            <div class="arch-layer" style="transition-delay: 0.08s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #2563EB, #60A5FA);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+                </div>
+                <div class="arch-layer-name">Protokoly</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">LoRaWAN Class A</span>
+                    <span class="arch-badge magnetic">MQTT v3.1.1</span>
+                    <span class="arch-badge magnetic">TLS/SSL</span>
+                    <span class="arch-badge magnetic">WebSocket</span>
+                </div>
+            </div>
+            <div class="arch-layer" style="transition-delay: 0.16s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #3B82F6, #06B6D4);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 8h10M7 12h6M7 16h8" opacity="0.5"/></svg></span>
+                </div>
+                <div class="arch-layer-name">Backend</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">Python 3.11</span>
+                    <span class="arch-badge magnetic">Flask</span>
+                    <span class="arch-badge magnetic">Flask-SocketIO</span>
+                    <span class="arch-badge magnetic">paho-mqtt</span>
+                    <span class="arch-badge magnetic">psycopg3</span>
+                </div>
+            </div>
+            <div class="arch-layer" style="transition-delay: 0.24s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #0E7490, #22D3EE);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+                </div>
+                <div class="arch-layer-name">Databáza</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">PostgreSQL 16</span>
+                    <span class="arch-badge magnetic">TimescaleDB</span>
+                    <span class="arch-badge magnetic">PostGIS</span>
+                    <span class="arch-badge magnetic">Hypertables</span>
+                </div>
+            </div>
+            <div class="arch-layer" style="transition-delay: 0.32s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #2563EB, #818CF8);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
+                </div>
+                <div class="arch-layer-name">Frontend</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">React 19</span>
+                    <span class="arch-badge magnetic">Vite</span>
+                    <span class="arch-badge magnetic">Leaflet.js</span>
+                    <span class="arch-badge magnetic">Tailwind CSS</span>
+                    <span class="arch-badge magnetic">Socket.IO</span>
+                </div>
+            </div>
+            <div class="arch-layer" style="transition-delay: 0.4s;">
+                <div class="arch-layer-icon" style="background: linear-gradient(135deg, #1E3A5F, #3B82F6);">
+                    <span class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20M9 21V9" opacity="0.5"/></svg></span>
+                </div>
+                <div class="arch-layer-name">DevOps</div>
+                <div class="arch-layer-badges">
+                    <span class="arch-badge magnetic">Docker Compose</span>
+                    <span class="arch-badge magnetic">pgAdmin</span>
+                    <span class="arch-badge magnetic">Git</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 4: HARDWARE ==================== -->
+<section class="slide" id="hardware" data-slide="4">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">03 / Hardvér a IoT</div>
+            <h2 class="section-title">LoRaWAN infraštruktúra</h2>
+            <p class="section-subtitle">Gateway s dosahom 15 km a kompaktné trackery veľkosti kľúčenky.</p>
+        </div>
+
+        <div class="cards-grid cards-grid-2 animate-on-scroll">
+            <div class="card">
+                <div class="card-icon red">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M4 22V4c0-1 1-2 2-2h12c1 0 2 1 2 2v18l-4-2-4 2-4-2-4 2z"/><path d="M9 10h6M9 14h4" opacity="0.5"/></svg></span>
+                </div>
+                <div class="card-title">RAK7289 V2 Gateway</div>
+                <div class="card-description">Profesionálna outdoor gateway s integrovaným LTE modulom a IP67 krytím.</div>
+                <ul class="feature-list">
+                    <li>8 simultánnych prijímacích kanálov EU868</li>
+                    <li>Ethernet + LTE Cat 4 konektivita</li>
+                    <li>WisGateOS (OpenWRT) s MQTT Bridge</li>
+                    <li>TLS šifrovanie na porte 8883</li>
+                    <li>Integrovaný LoRaWAN Network Server</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-icon accent">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                </div>
+                <div class="card-title">SenseCap T1000-B Tracker</div>
+                <div class="card-description">GPS/GLONASS + WiFi + Bluetooth lokalizácia v zariadení 42×42×18 mm.</div>
+                <ul class="feature-list">
+                    <li>GPS presnosť &lt;10m outdoor</li>
+                    <li>700 mAh batéria, USB-C nabíjanie</li>
+                    <li>IP65 — odolný voči prachu a vode</li>
+                    <li>SOS tlačidlo pre núdzové situácie</li>
+                    <li>LoRaWAN Class A, SF7-SF12</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="animate-on-scroll" style="margin-top: 1.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; letter-spacing: -0.01em;">Porovnanie variant trackerov</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Funkcia</th>
+                        <th>T1000-A</th>
+                        <th class="highlight">T1000-B</th>
+                        <th>T1000-E</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>GPS/GLONASS</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+                    <tr><td>WiFi lokalizácia</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+                    <tr><td>Bluetooth lokalizácia</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+                    <tr><td>Meshtastic podpora</td><td class="cross">&#10007;</td><td class="cross">&#10007;</td><td class="check">&#10003;</td></tr>
+                    <tr><td>SOS tlačidlo</td><td class="cross">&#10007;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+                    <tr><td>Orientačná cena</td><td>700 Kč</td><td><strong>900 Kč</strong></td><td>1200 Kč</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- LoRaWAN SF Tradeoff Chart -->
+        <div class="card animate-on-scroll" id="batteryChart" style="margin-top:1.5rem;">
+            <div class="card-title" style="display:flex;align-items:center;gap:0.5rem;">
+                <span class="icon icon-sm"><svg viewBox="0 0 24 24" style="stroke:var(--primary-light);"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2" stroke-linecap="round"/></svg></span>
+                Spotreba batérie SenseCap T1000-B — 700 mAh
+            </div>
+            <svg id="batteryPieSvg" viewBox="-120 -10 620 235" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+
+        <!-- LoRaWAN Signal Demo -->
+        <div class="signal-demo animate-on-scroll">
+            <div class="signal-device">
+                <div class="signal-device-icon" style="background: linear-gradient(135deg, #0E7490, #22D3EE);">
+                    <span class="icon"><svg viewBox="0 0 24 24" style="stroke: white;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                </div>
+                <div class="signal-device-label">T1000-B</div>
+                <div class="signal-device-sub">GPS Tracker</div>
+            </div>
+            <div class="signal-waves">
+                <div class="signal-wave"></div>
+                <div class="signal-wave"></div>
+                <div class="signal-wave"></div>
+                <div class="signal-wave"></div>
+                <div class="signal-wave"></div>
+                <div class="signal-info">LoRaWAN EU868 — až 15 km</div>
+            </div>
+            <div class="signal-device">
+                <div class="signal-device-icon" style="background: linear-gradient(135deg, #1E40AF, #3B82F6);">
+                    <span class="icon"><svg viewBox="0 0 24 24" style="stroke: white;"><path d="M4 22V4c0-1 1-2 2-2h12c1 0 2 1 2 2v18l-4-2-4 2-4-2-4 2z"/><path d="M9 10h6M9 14h4" opacity="0.5"/></svg></span>
+                </div>
+                <div class="signal-device-label">RAK7289</div>
+                <div class="signal-device-sub">Gateway</div>
+            </div>
+            <div class="signal-waves">
+                <div class="signal-wave" style="border-color: rgba(6,182,212,0.3);"></div>
+                <div class="signal-wave" style="border-color: rgba(6,182,212,0.3);"></div>
+                <div class="signal-wave" style="border-color: rgba(6,182,212,0.3);"></div>
+                <div class="signal-wave" style="border-color: rgba(6,182,212,0.3);"></div>
+                <div class="signal-wave" style="border-color: rgba(6,182,212,0.3);"></div>
+                <div class="signal-info">MQTT/TLS port 8883</div>
+            </div>
+            <div class="signal-device">
+                <div class="signal-device-icon" style="background: linear-gradient(135deg, #3B82F6, #06B6D4);">
+                    <span class="icon"><svg viewBox="0 0 24 24" style="stroke: white;"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 8h10M7 12h6M7 16h8" opacity="0.5"/></svg></span>
+                </div>
+                <div class="signal-device-label">Flask API</div>
+                <div class="signal-device-sub">Backend</div>
+            </div>
+        </div>
+
+        <div class="screenshots-grid animate-on-scroll">
+            <div class="screenshot-container">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Firmware aktualizácia gateway</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/aktualizacia_sw_na_brane.png" alt="Firmware update" loading="lazy">
+                </div>
+                <div class="screenshot-bar" style="margin-top: 8px; border-radius: 12px 12px 0 0;">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Priebeh aktualizácie firmware</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/priebeh_aktualizacie_fw.png" alt="Firmware flashing progress" loading="lazy">
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">GPS rozptyl v budove (indoor)</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/gps_rozptyl_indoor.png" alt="GPS indoor scatter" loading="lazy">
+                    <div class="callout yellow" style="top: 30%; left: 35%;">~300m drift</div>
+                    <div class="callout green" style="top: 65%; left: 55%;">Skutočná poloha</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 5: BACKEND & DB ==================== -->
+<section class="slide" id="backend" data-slide="5">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">04 / Backend a Databáza</div>
+            <h2 class="section-title">Spracovanie a ukladanie dát</h2>
+            <p class="section-subtitle">MQTT parser, Flask REST API, PostgreSQL s rozšíreniami pre časové rady a geospatial operácie.</p>
+        </div>
+
+        <div class="cards-grid cards-grid-2 animate-on-scroll">
+            <!-- Horizontal Bar Chart -->
+            <div class="card" style="padding: 1.75rem;">
+                <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24" style="stroke: var(--primary-light);"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></span>
+                    Rozdelenie hodín podľa úloh
+                </div>
+                <div class="card-description" style="margin-bottom: 0.5rem; font-size: 0.85rem;">Celkom ~370 hodín evidovaných v systéme Redmine</div>
+                <div class="h-bar-chart" id="hoursChart">
+                    <div class="h-bar-item"><div class="h-bar-label">Frontend</div><div class="h-bar-track"><div class="h-bar-fill" data-width="100" style="background: linear-gradient(90deg, #2563EB, #60A5FA);"></div></div><div class="h-bar-value">80h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">API</div><div class="h-bar-track"><div class="h-bar-fill" data-width="75" style="background: linear-gradient(90deg, #0E7490, #22D3EE);"></div></div><div class="h-bar-value">60h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">MQTT</div><div class="h-bar-track"><div class="h-bar-fill" data-width="56" style="background: linear-gradient(90deg, #1D4ED8, #93C5FD);"></div></div><div class="h-bar-value">45h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">Security</div><div class="h-bar-track"><div class="h-bar-fill" data-width="56" style="background: linear-gradient(90deg, #1E40AF, #818CF8);"></div></div><div class="h-bar-value">45h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">Databáza</div><div class="h-bar-track"><div class="h-bar-fill" data-width="50" style="background: linear-gradient(90deg, #0369A1, #38BDF8);"></div></div><div class="h-bar-value">40h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">Testing</div><div class="h-bar-track"><div class="h-bar-fill" data-width="50" style="background: linear-gradient(90deg, #155E75, #67E8F9);"></div></div><div class="h-bar-value">40h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">Geofencing</div><div class="h-bar-track"><div class="h-bar-fill" data-width="44" style="background: linear-gradient(90deg, #1E3A5F, #7DD3FC);"></div></div><div class="h-bar-value">35h</div></div>
+                    <div class="h-bar-item"><div class="h-bar-label">Hardware</div><div class="h-bar-track"><div class="h-bar-fill" data-width="31" style="background: linear-gradient(90deg, #1E3A5F, #60A5FA);"></div></div><div class="h-bar-value">25h</div></div>
+                    <div class="h-bar-total">
+                        <div class="h-bar-total-label">Celkom evidované</div>
+                        <div class="h-bar-total-value">~370 hodín</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24" style="stroke: var(--primary-light);"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+                    PostgreSQL + Rozšírenia
+                </div>
+                <div class="card-description">Jediná kombinácia podporujúca time-series aj geospatial v jednej databáze.</div>
+                <div class="progress-section">
+                    <div class="progress-item">
+                        <div class="progress-header"><span class="progress-label">Edge cases vyriešené</span><span class="progress-value">8/8</span></div>
+                        <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header"><span class="progress-label">API endpointy</span><span class="progress-value">13</span></div>
+                        <div class="progress-bar"><div class="progress-fill" data-width="85"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header"><span class="progress-label">DB tabuľky</span><span class="progress-value">8</span></div>
+                        <div class="progress-bar"><div class="progress-fill" data-width="70"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-header"><span class="progress-label">PostGIS funkcie</span><span class="progress-value">6</span></div>
+                        <div class="progress-bar"><div class="progress-fill" data-width="60"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ER Diagram -->
+        <div class="screenshot-container animate-on-scroll" style="margin-top: 1.5rem;">
+            <div class="screenshot-bar">
+                <div class="screenshot-dot red"></div>
+                <div class="screenshot-dot yellow"></div>
+                <div class="screenshot-dot green"></div>
+                <div class="screenshot-title">ER Diagram — 8 tabuliek, foreign keys, hypertable + PostGIS</div>
+            </div>
+            <div class="screenshot-body">
+                <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/er_diagram_final.png" alt="ER Diagram" loading="lazy">
+            </div>
+        </div>
+
+        <!-- Code Snippet + Animated Pipeline -->
+        <div class="cards-grid cards-grid-2 animate-on-scroll" style="margin-top: 1.5rem; align-items: stretch;">
+            <div class="code-block" id="codeBlock" style="margin-top: 0;">
+                <div class="code-header">
+                    <div class="code-header-dot" style="background: #FF5F56;"></div>
+                    <div class="code-header-dot" style="background: #FFBD2E;"></div>
+                    <div class="code-header-dot" style="background: #27C93F;"></div>
+                    <div class="code-header-title">geofence_check.py — detekcia entry/exit</div>
+                </div>
+                <div class="code-body"><span class="code-line"><span class="kw">def</span> <span class="fn">check_geofences</span>(<span class="var">device_id</span>, <span class="var">lat</span>, <span class="var">lon</span>):</span>
+<span class="code-line">    <span class="var">point</span> = <span class="fn">ST_SetSRID</span>(</span>
+<span class="code-line">        <span class="fn">ST_Point</span>(<span class="var">lon</span>, <span class="var">lat</span>), <span class="num">4326</span>)</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="cm"># Nájdi všetky zóny obsahujúce bod</span></span>
+<span class="code-line">    <span class="var">zones</span> = db.execute(<span class="str">"""</span></span>
+<span class="code-line"><span class="str">      SELECT id, name FROM zones</span></span>
+<span class="code-line"><span class="str">      WHERE ST_Contains(</span></span>
+<span class="code-line"><span class="str">        geom, %s)"""</span>, [<span class="var">point</span>])</span>
+<span class="code-line"></span>
+<span class="code-line">    <span class="kw">for</span> <span class="var">zone</span> <span class="kw">in</span> <span class="var">zones</span>:</span>
+<span class="code-line">        <span class="var">prev</span> = <span class="fn">get_prev_state</span>(</span>
+<span class="code-line">            <span class="var">device_id</span>, <span class="var">zone</span>.id)</span>
+<span class="code-line">        <span class="kw">if</span> <span class="var">prev</span> == <span class="str">'OUTSIDE'</span>:</span>
+<span class="code-line">            <span class="fn">emit_alert</span>(<span class="str">'ENTRY'</span>,</span>
+<span class="code-line">                <span class="var">device_id</span>, <span class="var">zone</span>)</span>
+<span class="code-line">            <span class="fn">socketio.emit</span>(</span>
+<span class="code-line">                <span class="str">'zone_alert'</span>,</span>
+<span class="code-line">                {<span class="str">'type'</span>: <span class="str">'ENTRY'</span>})</span></div>
+            </div>
+
+            <!-- Animated Vertical Pipeline -->
+            <div id="pipeline" style="background: rgba(18,18,26,0.92); border-radius: 24px; padding: 1.5rem; border: 1px solid var(--dark-border); position: relative; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--primary-light); font-weight: 600; margin-bottom: 1rem;">Vizualizácia — Geofence Check</div>
+
+                <div class="pipe-steps">
+                    <div class="pipe-step" data-step="0">
+                        <div class="pipe-icon" style="background: linear-gradient(135deg, #1E40AF, #3B82F6);">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <div class="pipe-content">
+                            <div class="pipe-title">GPS pozícia prichádza</div>
+                            <div class="pipe-data"><span class="pipe-tag">lat:</span> 49.8345 <span class="pipe-tag">lon:</span> 18.2820</div>
+                        </div>
+                    </div>
+                    <div class="pipe-connector"><div class="pipe-connector-fill"></div></div>
+
+                    <div class="pipe-step" data-step="1">
+                        <div class="pipe-icon" style="background: linear-gradient(135deg, #0E7490, #22D3EE);">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                        </div>
+                        <div class="pipe-content">
+                            <div class="pipe-title">ST_Contains query</div>
+                            <div class="pipe-data"><span class="pipe-tag">result:</span> zone "VIP Area" → <span style="color: #60A5FA; font-weight: 700;">MATCH</span></div>
+                        </div>
+                    </div>
+                    <div class="pipe-connector"><div class="pipe-connector-fill"></div></div>
+
+                    <div class="pipe-step" data-step="2">
+                        <div class="pipe-icon" style="background: linear-gradient(135deg, #1D4ED8, #60A5FA);">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="pipe-content">
+                            <div class="pipe-title">Porovnanie s predošlým stavom</div>
+                            <div class="pipe-data"><span class="pipe-tag">prev:</span> OUTSIDE → <span class="pipe-tag">now:</span> INSIDE</div>
+                        </div>
+                    </div>
+                    <div class="pipe-connector"><div class="pipe-connector-fill"></div></div>
+
+                    <div class="pipe-step" data-step="3">
+                        <div class="pipe-icon" style="background: linear-gradient(135deg, #1E40AF, #818CF8);">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        </div>
+                        <div class="pipe-content">
+                            <div class="pipe-title" style="color: #93C5FD;">ENTRY Alert!</div>
+                            <div class="pipe-data"><span class="pipe-tag">emit:</span> zone_alert → WebSocket → Frontend</div>
+                        </div>
+                    </div>
+                    <div class="pipe-connector"><div class="pipe-connector-fill"></div></div>
+
+                    <div class="pipe-step" data-step="4">
+                        <div class="pipe-icon" style="background: linear-gradient(135deg, #0369A1, #38BDF8);">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                        </div>
+                        <div class="pipe-content">
+                            <div class="pipe-title" style="color: #60A5FA;">Mapa sa aktualizuje</div>
+                            <div class="pipe-data"><span class="pipe-tag">marker:</span> zmena farby + popup "Vstup do VIP Area"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 6: LIVE MODE ==================== -->
+<section class="slide" id="live" data-slide="6">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">05 / Frontend — LIVE Mode</div>
+            <h2 class="section-title">Real-time tracking</h2>
+            <p class="section-subtitle">Aktuálne pozície všetkých trackerov s WebSocket aktualizáciami pod 2 sekundy.</p>
+        </div>
+
+        <div class="screenshot-container animate-on-scroll">
+            <div class="screenshot-bar">
+                <div class="screenshot-dot red"></div>
+                <div class="screenshot-dot yellow"></div>
+                <div class="screenshot-dot green"></div>
+                <div class="screenshot-title">LIVE Mode — ľavý panel, mapa s markermi, pravý panel s detailom</div>
+            </div>
+            <div class="screenshot-body">
+                <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/prava_lava_lista_vysunuta.png" alt="LIVE Mode" loading="lazy">
+                <div class="callout" style="top: 20%; left: 2%;">Zoznam zariadení</div>
+                <div class="callout accent" style="top: 35%; left: 40%;">Marker na mape</div>
+                <div class="callout" style="top: 15%; right: 3%; left: auto;">Detail panel</div>
+                <div class="callout green" style="bottom: 20%; left: 5%;">Battery indikátor</div>
+            </div>
+            <div class="screenshot-caption">
+                <span class="caption-pill magnetic">Real-time</span>
+                <span class="caption-pill magnetic">WebSocket</span>
+                <span class="caption-pill magnetic">&lt;2s latencia</span>
+                <span class="caption-pill magnetic">Battery monitoring</span>
+                <span class="caption-pill magnetic">Device tags</span>
+            </div>
+        </div>
+
+        <div class="cards-grid cards-grid-4 animate-on-scroll" style="margin-top: 1.5rem;">
+            <div class="card" style="padding: 1.25rem;">
+                <div class="card-icon" style="width: 40px; height: 40px; border-radius: 12px; margin-bottom: 0.75rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg></span>
+                </div>
+                <div class="card-title" style="font-size: 0.95rem;">Battery Alerts</div>
+                <div class="card-description" style="font-size: 0.82rem;">Farebné markery: zelená &gt;50%, žltá 20-50%, červená &lt;20%</div>
+            </div>
+            <div class="card" style="padding: 1.25rem;">
+                <div class="card-icon accent" style="width: 40px; height: 40px; border-radius: 12px; margin-bottom: 0.75rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
+                </div>
+                <div class="card-title" style="font-size: 0.95rem;">Telemetria</div>
+                <div class="card-description" style="font-size: 0.82rem;">GPS, batéria, last seen, signál — všetko v bočnom paneli</div>
+            </div>
+            <div class="card" style="padding: 1.25rem;">
+                <div class="card-icon purple" style="width: 40px; height: 40px; border-radius: 12px; margin-bottom: 0.75rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
+                </div>
+                <div class="card-title" style="font-size: 0.95rem;">Device Tags</div>
+                <div class="card-description" style="font-size: 0.82rem;">Kategórie: security, staff, VIP, medical — filtrovanie</div>
+            </div>
+            <div class="card" style="padding: 1.25rem;">
+                <div class="card-icon green" style="width: 40px; height: 40px; border-radius: 12px; margin-bottom: 0.75rem;">
+                    <span class="icon icon-sm"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+                </div>
+                <div class="card-title" style="font-size: 0.95rem;">WebSocket</div>
+                <div class="card-description" style="font-size: 0.82rem;">Push notifikácie — žiadne polling, okamžité aktualizácie</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 7: HISTORICAL ==================== -->
+<section class="slide" id="historical" data-slide="7">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">06 / Frontend — Historical Mode</div>
+            <h2 class="section-title">Analýza pohybu</h2>
+            <p class="section-subtitle">Trail vizualizácia s časovým sliderom a heatmapa hustoty pohybu.</p>
+        </div>
+
+        <div class="screenshots-grid animate-on-scroll">
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Historical Mode — trail vizualizácia</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/historical_mode_portrait.png" alt="Historical Mode" loading="lazy">
+                    <div class="callout" style="bottom: 12%; left: 10%;">Časový slider</div>
+                    <div class="callout accent" style="top: 40%; left: 35%;">Trail vizualizácia</div>
+                    <div class="callout" style="bottom: 18%; left: 50%;">Časový rozsah</div>
+                </div>
+                <div class="screenshot-caption">
+                    <span class="caption-pill magnetic">Playback</span>
+                    <span class="caption-pill magnetic">Timeline slider</span>
+                    <span class="caption-pill magnetic">Date range</span>
+                </div>
+            </div>
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Heatmapa — vizualizácia hustoty pohybu</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/heat_mapa_v_historical_mode.png" alt="Heatmap" loading="lazy">
+                    <div class="callout yellow" style="top: 35%; left: 40%;">Hot spots</div>
+                    <div class="callout accent" style="top: 55%; left: 60%;">Hustota pohybu</div>
+                </div>
+                <div class="screenshot-caption">
+                    <span class="caption-pill magnetic">Heatmapa</span>
+                    <span class="caption-pill magnetic">Density</span>
+                    <span class="caption-pill magnetic">Analýza miest</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-grid cards-grid-2 animate-on-scroll" style="margin-top: 1.5rem;">
+            <div class="card">
+                <div class="card-icon">
+                    <span class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                </div>
+                <div class="card-title">Trail Vizualizacia</div>
+                <div class="card-description">Čiara zobrazujúca trasu pohybu s časovým sliderom pre animáciu. Umožňuje prehrávanie pohybu za zvolené časové obdobie — užitočné pre analýzu po evente.</div>
+            </div>
+            <div class="card">
+                <div class="card-icon warm">
+                    <span class="icon"><svg viewBox="0 0 24 24"><path d="M12 2c-4 0-8 5-8 10a8 8 0 0016 0c0-5-4-10-8-10z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                </div>
+                <div class="card-title">Heatmapa</div>
+                <div class="card-description">Vizualizácia hustoty pohybu, kde červené oblasti indikujú miesta s najväčšou koncentráciou pozícií. Identifikácia populárnych trás a miest zdržiavania.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 8: GEOFENCING ==================== -->
+<section class="slide" id="geofencing" data-slide="8">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">07 / Geofencing a POI</div>
+            <h2 class="section-title">Virtuálne zóny a body záujmu</h2>
+            <p class="section-subtitle">Kreslenie polygónov na mape, entry/exit detekcia pomocou PostGIS, nearby search.</p>
+        </div>
+
+        <div class="screenshots-grid animate-on-scroll">
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Geofencing — aktívne zóny</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/zony_novsia_verzia.png" alt="Geofencing zones" loading="lazy">
+                    <div class="callout" style="top: 25%; left: 35%;">Polygón zóny</div>
+                    <div class="callout green" style="top: 50%; left: 10%;">INSIDE / OUTSIDE</div>
+                    <div class="callout accent" style="top: 15%; right: 5%; left: auto;">Tracker count</div>
+                </div>
+            </div>
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Detail zóny — trackers s alertmi</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/geo-zone-alerts.png" alt="Geofence alerts" loading="lazy">
+                </div>
+            </div>
+        </div>
+
+        <div class="screenshots-grid animate-on-scroll" style="margin-top: 1.25rem;">
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">POI štatistiky</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/statistika_v_point_of_interest.png" alt="POI stats" loading="lazy">
+                    <div class="callout" style="top: 20%; right: 8%; left: auto;">Total Visits</div>
+                    <div class="callout accent" style="top: 45%; right: 8%; left: auto;">Inside Now</div>
+                </div>
+            </div>
+            <div class="screenshot-container" style="margin-top: 0;">
+                <div class="screenshot-bar">
+                    <div class="screenshot-dot red"></div>
+                    <div class="screenshot-dot yellow"></div>
+                    <div class="screenshot-dot green"></div>
+                    <div class="screenshot-title">Nearby Trackers — vyhľadanie v okruhu</div>
+                </div>
+                <div class="screenshot-body">
+                    <img src="https://raw.githubusercontent.com/Kames003/Bakal-rska_pr-ca/main/Figures/filtrovanie_trackerov_nearby.png" alt="Nearby search" loading="lazy">
+                    <div class="callout" style="top: 30%; left: 35%;">Radius search</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== SLIDE 9: VYZVY ==================== -->
+<section class="slide" id="challenges" data-slide="9">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">08 / Výzvy a Riešenia</div>
+            <h2 class="section-title">Problémy z reálneho sveta</h2>
+            <p class="section-subtitle">IoT nie je ideálny svet — GPS drift, firmware bugy, edge cases na každom kroku.</p>
+        </div>
+
+        <div class="lessons-grid animate-on-scroll">
+            <div class="lesson-card">
+                <div class="lesson-label">Vyriešené</div>
+                <div class="lesson-title">GPS Cold Start (0.0, 0.0)</div>
+                <div class="lesson-description">Tracker po zapnutí posielal nulové súradnice. Implementované filtrovanie v parseri — pozície (0.0, 0.0) sú ignorované a neukladajú sa.</div>
+            </div>
+            <div class="lesson-card problem">
+                <div class="lesson-label">Firmware Bug</div>
+                <div class="lesson-title">Battery Stuck na 100%</div>
+                <div class="lesson-description">Niektoré trackery hlásili 100% batériu aj keď boli takmer vybité. Detekcia anomálie: ak 100% viac ako 24h bez zmeny — alert operátorovi.</div>
+            </div>
+            <div class="lesson-card warning">
+                <div class="lesson-label">Workaround</div>
+                <div class="lesson-title">GPS Drift ~300m v budovách</div>
+                <div class="lesson-description">Detekcia nereálnej rýchlosti (&gt;500 km/h) medzi pozíciami. Pre indoor by bol potrebný Kalman filter — ponechané ako budúce rozšírenie.</div>
+            </div>
+            <div class="lesson-card info">
+                <div class="lesson-label">Robustnosť</div>
+                <div class="lesson-title">Corrupted JSON &amp; Duplicity</div>
+                <div class="lesson-description">Try/except s logovaním pre poškodené správy. Upsert namiesto INSERT pre deduplikáciu pri MQTT QoS 1+ retry mechanizme.</div>
+            </div>
+            <div class="lesson-card">
+                <div class="lesson-label">Vyriešené</div>
+                <div class="lesson-title">Garbage GPS Values (999, -999)</div>
+                <div class="lesson-description">Validácia rozsahu podľa WGS84: latitude -90 až +90, longitude -180 až +180. Neplatné hodnoty sú zahodené.</div>
+            </div>
+            <div class="lesson-card warning">
+                <div class="lesson-label">Workaround</div>
+                <div class="lesson-title">Device Name "none"</div>
+                <div class="lesson-description">Bug v SenseCraft aplikácii spôsoboval prázdne meno zariadenia. Fallback na DevEUI ako unikátny identifikátor.</div>
+            </div>
+        </div>
+
+        <!-- Challenge Impact Matrix -->
+    </div>
+</section>
+
+<!-- ==================== SLIDE 10: VYSLEDKY ==================== -->
+<section class="slide" id="results" data-slide="10">
+    <div class="slide-inner">
+        <div class="section-header">
+            <div class="section-number">09 / Dosiahnuté Výsledky</div>
+            <h2 class="section-title">Celkové zhodnotenie</h2>
+            <p class="section-subtitle">Kompletný GPS tracking systém od hardvéru po frontend, pripravený na reálne nasadenie.</p>
+        </div>
+
+        <!-- Project Timeline -->
+        <div class="animate-on-scroll" style="margin-bottom: 2.5rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.5rem;">
+                <span class="icon icon-sm"><svg viewBox="0 0 24 24" style="stroke: var(--primary-light);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                Priebeh projektu
+            </h3>
+            <div class="timeline-container" id="projectTimeline">
+                <div class="timeline-track">
+                    <div class="timeline-line"><div class="timeline-line-fill" id="timelineFill"></div></div>
+                    <div class="timeline-nodes">
+                        <div class="timeline-node" data-delay="0">
+                            <div class="timeline-node-date">OKT 2025</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">HW setup & LoRaWAN</div>
+                        </div>
+                        <div class="timeline-node" data-delay="1">
+                            <div class="timeline-node-date">NOV 2025</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">MQTT parser</div>
+                        </div>
+                        <div class="timeline-node" data-delay="2">
+                            <div class="timeline-node-date">DEC 2025</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">Databáza & API</div>
+                        </div>
+                        <div class="timeline-node" data-delay="3">
+                            <div class="timeline-node-date">JAN 2026</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">Frontend v1</div>
+                        </div>
+                        <div class="timeline-node" data-delay="4">
+                            <div class="timeline-node-date">FEB 2026</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">Geofencing & POI</div>
+                        </div>
+                        <div class="timeline-node" data-delay="5">
+                            <div class="timeline-node-date">MAR 2026</div>
+                            <div class="timeline-node-dot"></div>
+                            <div class="timeline-node-label">Security & Testing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Pie + Radar -->
+        <div class="charts-duo" id="chartsDuo">
+            <div class="chart-panel">
+                <div class="chart-panel-title">Rozdelenie hodín podľa oblasti</div>
+                <svg id="pie3dSvg" viewBox="-40 -12 600 305" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+            <div class="chart-panel">
+                <div class="chart-panel-title">Technologické kompetencie</div>
+                <svg id="radarSvg" viewBox="0 0 370 370" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+        </div>
+
+        <!-- Donut Charts -->
+        <div class="charts-grid animate-on-scroll">
+            <div class="chart-card">
+                <div class="donut-chart" data-pct="60" data-color="#3B82F6">
+                    <div class="donut-chart-inner">60%</div>
+                </div>
+                <div class="chart-label">Implementácia</div>
+                <div class="chart-sublabel">Backend, Frontend, DB</div>
+            </div>
+            <div class="chart-card">
+                <div class="donut-chart" data-pct="25" data-color="#22D3EE">
+                    <div class="donut-chart-inner">25%</div>
+                </div>
+                <div class="chart-label">Teória &amp; Analýza</div>
+                <div class="chart-sublabel">IoT, Protokoly, Porovnania</div>
+            </div>
+            <div class="chart-card">
+                <div class="donut-chart" data-pct="15" data-color="#818CF8">
+                    <div class="donut-chart-inner">15%</div>
+                </div>
+                <div class="chart-label">Reflexia</div>
+                <div class="chart-sublabel">Znalosti, Výzvy, Zhodnotenie</div>
+            </div>
+        </div>
+
+        <div class="stats-grid animate-on-scroll">
+            <div class="stat-card">
+                <div class="stat-value">~370h</div>
+                <div class="stat-label">Odpracovaných</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">13</div>
+                <div class="stat-label">REST endpointov</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Edge cases</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">&lt;2s</div>
+                <div class="stat-label">GPS &rarr; Mapa</div>
+            </div>
+        </div>
+
+        <!-- Progress bars -->
+        <div class="card animate-on-scroll" style="margin-top: 1.5rem;">
+            <div class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="icon icon-sm"><svg viewBox="0 0 24 24" style="stroke: var(--primary-light);"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+                Splnenie cieľov zo zadania
+            </div>
+            <div class="progress-section">
+                <div class="progress-item">
+                    <div class="progress-header"><span class="progress-label">Real-time tracking systém</span><span class="progress-value">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header"><span class="progress-label">Geofencing &amp; POI</span><span class="progress-value">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header"><span class="progress-label">Historical playback &amp; Heatmapy</span><span class="progress-value">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header"><span class="progress-label">Device management &amp; Tags</span><span class="progress-value">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header"><span class="progress-label">Bezpečnosť (TLS, CORS)</span><span class="progress-value">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" data-width="100"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Card -->
+        <div class="final-card animate-on-scroll" style="margin-top: 1.5rem;">
+            <div class="final-icon">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="final-title">Funkčný prototyp pripravený na reálne nasadenie</div>
+            <div class="final-subtitle">
+                Systém je navrhovaný pre produkčné využitie v spojení s produktom Hedurio pre organizáciu eventov.
+                Kompletný zdrojový kód a dokumentácia sú súčasťou priloženého média.
+            </div>
+            <div class="final-divider"></div>
+            <div class="final-stats">
+                <div class="final-stat">
+                    <div class="final-stat-value">~370h</div>
+                    <div class="final-stat-label">Odpracovaných</div>
+                </div>
+                <div class="final-stat">
+                    <div class="final-stat-value">8+</div>
+                    <div class="final-stat-label">Technológií</div>
+                </div>
+                <div class="final-stat">
+                    <div class="final-stat-value">100%</div>
+                    <div class="final-stat-label">Ciele splnené</div>
+                </div>
+            </div>
+            <div class="final-badges">
+                <div class="final-badge magnetic">Tomáš Mucha</div>
+                <div class="final-badge magnetic">Railsformers s.r.o.</div>
+                <div class="final-badge magnetic">VŠB-TUO FEI 2026</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // ==================== PARTICLES ====================
+    const particlesEl = document.getElementById('particles');
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < 60; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top = Math.random() * 100 + '%';
+        p.style.animationDelay = -(Math.random() * 20) + 's';
+        const px = (Math.random() * 120 - 40).toFixed(0) + 'px';
+        const py = (-(Math.random() * 140 + 60)).toFixed(0) + 'px';
+        p.style.setProperty('--px', px);
+        p.style.setProperty('--py', py);
+        frag.appendChild(p);
+    }
+    particlesEl.appendChild(frag);
+
+
+    // ==================== NAV SCROLL ====================
+    const nav = document.getElementById('nav');
+    let scrollTick = false;
+    window.addEventListener('scroll', () => {
+        if (!scrollTick) {
+            scrollTick = true;
+            requestAnimationFrame(() => {
+                nav.classList.toggle('scrolled', window.scrollY > 50);
+                scrollTick = false;
+            });
+        }
+    }, { passive: true });
+
+    // ==================== ACTIVE NAV LINK ====================
+    const slides = document.querySelectorAll('.slide[data-slide]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const slideCounter = document.getElementById('currentSlide');
+
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                const slideNum = entry.target.dataset.slide;
+                navLinks.forEach(l => l.classList.remove('active'));
+                const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                if (activeLink) activeLink.classList.add('active');
+                slideCounter.textContent = slideNum.padStart(2, '0');
+            }
+        });
+    }, { threshold: 0.3 });
+    slides.forEach(s => navObserver.observe(s));
+
+    // ==================== SCROLL ANIMATIONS ====================
+    const animObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+
+                // Animate progress bars
+                entry.target.querySelectorAll('.progress-fill').forEach(fill => {
+                    fill.style.width = fill.dataset.width + '%';
+                });
+
+                // Animate horizontal bar chart
+                entry.target.querySelectorAll('.h-bar-fill[data-width]').forEach((bar, i) => {
+                    setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, i * 80);
+                });
+
+                // Animate callouts
+                entry.target.querySelectorAll('.callout').forEach((c, i) => {
+                    setTimeout(() => c.classList.add('visible'), 400 + i * 200);
+                });
+            }
+        });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.animate-on-scroll').forEach(el => animObserver.observe(el));
+
+    // ==================== ARCH LAYER ANIMATIONS ====================
+    const archObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const layers = entry.target.querySelectorAll('.arch-layer');
+                layers.forEach((layer, i) => {
+                    setTimeout(() => layer.classList.add('visible'), i * 100);
+                });
+                archObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+    const archLayers = document.getElementById('archLayers');
+    if (archLayers) archObserver.observe(archLayers);
+
+    // ==================== SCREENSHOT CALLOUTS (animate in parent screenshot-container) ====================
+    const screenshotObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.querySelectorAll('.callout').forEach((c, i) => {
+                    setTimeout(() => c.classList.add('visible'), 600 + i * 250);
+                });
+                screenshotObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.screenshot-container').forEach(el => screenshotObserver.observe(el));
+
+    // ==================== ANIMATED COUNTERS ====================
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.querySelectorAll('[data-count]').forEach(counter => {
+                    const target = parseInt(counter.dataset.count);
+                    const duration = 2000;
+                    const step = target / (duration / 16);
+                    let current = 0;
+                    const timer = setInterval(() => {
+                        current += step;
+                        if (current >= target) {
+                            counter.textContent = target;
+                            clearInterval(timer);
+                        } else {
+                            counter.textContent = Math.floor(current);
+                        }
+                    }, 16);
+                });
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.hero-stats').forEach(el => counterObserver.observe(el));
+
+    // ==================== 3D TILT EFFECT ON CARDS ====================
+    document.querySelectorAll('.card').forEach(card => {
+        const shine = document.createElement('div');
+        shine.className = 'card-tilt-shine';
+        card.appendChild(shine);
+        card.classList.add('card-tilt');
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -6;
+            const rotateY = ((x - centerX) / centerX) * 6;
+            card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+            shine.style.setProperty('--mx', (x / rect.width * 100) + '%');
+            shine.style.setProperty('--my', (y / rect.height * 100) + '%');
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
+        });
+    });
+
+    // ==================== TYPING EFFECT ON HERO SUBTITLE ====================
+    const heroSubtitle = document.querySelector('.hero-subtitle');
+    if (heroSubtitle) {
+        const fullHTML = heroSubtitle.innerHTML;
+        const lines = fullHTML.split('<br>').map(l => l.trim());
+        heroSubtitle.innerHTML = '';
+        heroSubtitle.classList.add('typing-cursor');
+        let lineIdx = 0, charIdx = 0;
+        let currentText = '';
+
+        function typeChar() {
+            if (lineIdx >= lines.length) {
+                heroSubtitle.classList.remove('typing-cursor');
+                return;
+            }
+            const line = lines[lineIdx];
+            if (charIdx < line.length) {
+                currentText += line[charIdx];
+                heroSubtitle.innerHTML = currentText;
+                charIdx++;
+                setTimeout(typeChar, 25);
+            } else {
+                lineIdx++;
+                if (lineIdx < lines.length) {
+                    currentText += '<br>';
+                    charIdx = 0;
+                    setTimeout(typeChar, 200);
+                } else {
+                    heroSubtitle.classList.remove('typing-cursor');
+                }
+            }
+        }
+        setTimeout(typeChar, 1200);
+    }
+
+    // ==================== PARALLAX PARTICLES (MOUSE) ====================
+    let mouseX = 0, mouseY = 0, parallaxRAF = false;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        if (!parallaxRAF) {
+            parallaxRAF = true;
+            requestAnimationFrame(() => {
+                const container = document.getElementById('particles');
+                if (container) {
+                    container.style.transform = `translate3d(${mouseX * 12}px, ${mouseY * 12}px, 0)`;
+                }
+                parallaxRAF = false;
+            });
+        }
+    });
+
+    // ==================== MAGNETIC HOVER ON BADGES ====================
+    document.querySelectorAll('.magnetic').forEach(el => {
+        el.addEventListener('mousemove', (e) => {
+            const rect = el.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            el.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+        });
+        el.addEventListener('mouseleave', () => {
+            el.style.transform = 'translate(0, 0)';
+        });
+    });
+
+    // ==================== TIMELINE ANIMATION ====================
+    const timelineEl = document.getElementById('projectTimeline');
+    if (timelineEl) {
+        const timelineObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const fill = document.getElementById('timelineFill');
+                    const nodes = timelineEl.querySelectorAll('.timeline-node');
+                    // Animate fill line
+                    setTimeout(() => { fill.style.width = '100%'; }, 200);
+                    // Animate nodes with stagger
+                    nodes.forEach((node, i) => {
+                        setTimeout(() => {
+                            node.classList.add('visible');
+                            node.classList.add('active');
+                        }, 400 + i * 300);
+                    });
+                    timelineObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        timelineObserver.observe(timelineEl);
+    }
+
+    // ==================== ANIMATED COUNTERS ON ALL STAT CARDS ====================
+    const allStatsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const statValues = entry.target.querySelectorAll('.stat-value');
+                statValues.forEach(sv => {
+                    const text = sv.textContent.trim();
+                    const numMatch = text.match(/(\d+)/);
+                    if (numMatch && !sv.dataset.animated) {
+                        sv.dataset.animated = '1';
+                        const target = parseInt(numMatch[1]);
+                        const prefix = text.slice(0, text.indexOf(numMatch[1]));
+                        const suffix = text.slice(text.indexOf(numMatch[1]) + numMatch[1].length);
+                        const duration = 1800;
+                        const step = target / (duration / 16);
+                        let current = 0;
+                        const timer = setInterval(() => {
+                            current += step;
+                            if (current >= target) {
+                                sv.textContent = prefix + target + suffix;
+                                clearInterval(timer);
+                            } else {
+                                sv.textContent = prefix + Math.floor(current) + suffix;
+                            }
+                        }, 16);
+                    }
+                });
+                allStatsObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.4 });
+    document.querySelectorAll('.stats-grid').forEach(el => allStatsObserver.observe(el));
+
+    // ==================== STAGGERED CARD REVEAL ====================
+    const cardRevealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const cards = entry.target.querySelectorAll('.card, .lesson-card, .chart-card');
+                cards.forEach((card, i) => {
+                    setTimeout(() => card.classList.add('card-visible'), i * 120);
+                });
+                cardRevealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.cards-grid, .lessons-grid, .charts-grid').forEach(el => cardRevealObserver.observe(el));
+
+    // ==================== PIPELINE ANIMATION ====================
+    const pipelineEl = document.getElementById('pipeline');
+    if (pipelineEl) {
+        const pipeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const steps = pipelineEl.querySelectorAll('.pipe-step');
+                    steps.forEach((step, i) => {
+                        setTimeout(() => step.classList.add('pipe-visible'), i * 500);
+                    });
+                    pipeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.25 });
+        pipeObserver.observe(pipelineEl);
+    }
+
+    // ==================== CODE BLOCK LINE REVEAL ====================
+    const codeBlockEl = document.getElementById('codeBlock');
+    if (codeBlockEl) {
+        const codeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const lines = codeBlockEl.querySelectorAll('.code-line');
+                    lines.forEach((line, i) => {
+                        setTimeout(() => line.classList.add('visible'), i * 80);
+                    });
+                    codeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        codeObserver.observe(codeBlockEl);
+    }
+
+    // ==================== KEYBOARD NAVIGATION ====================
+    const allSlides = Array.from(document.querySelectorAll('.slide[data-slide]'));
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const current = allSlides.findIndex(s => {
+                const rect = s.getBoundingClientRect();
+                return rect.top >= -100 && rect.top < window.innerHeight / 2;
+            });
+            const next = current < allSlides.length - 1 ? current + 1 : current;
+            allSlides[next].scrollIntoView({ behavior: 'smooth' });
+        }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const current = allSlides.findIndex(s => {
+                const rect = s.getBoundingClientRect();
+                return rect.top >= -100 && rect.top < window.innerHeight / 2;
+            });
+            const prev = current > 0 ? current - 1 : 0;
+            allSlides[prev].scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+    // ==================== DONUT CHART SCROLL ANIMATION ====================
+    const donutObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const donuts = entry.target.querySelectorAll('.donut-chart[data-pct]');
+                donuts.forEach((d, i) => {
+                    const target = parseInt(d.dataset.pct);
+                    const color = d.dataset.color || '#3B82F6';
+                    const inner = d.querySelector('.donut-chart-inner');
+                    d.style.setProperty('--donut-color', color);
+                    if (inner) inner.textContent = '0%';
+                    setTimeout(() => {
+                        d.style.setProperty('--donut-to', target + '%');
+                        // Animate number
+                        if (inner) {
+                            let cur = 0;
+                            const step = target / (1500 / 16);
+                            const timer = setInterval(() => {
+                                cur += step;
+                                if (cur >= target) { inner.textContent = target + '%'; clearInterval(timer); }
+                                else { inner.textContent = Math.floor(cur) + '%'; }
+                            }, 16);
+                        }
+                    }, i * 250);
+                });
+                donutObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    document.querySelectorAll('.charts-grid').forEach(el => donutObserver.observe(el));
+
+    // ==================== 3D PIE CHART ====================
+    (function buildPie3D() {
+        const svg = document.getElementById('pie3dSvg');
+        if (!svg) return;
+        const ns = 'http://www.w3.org/2000/svg';
+
+        const segments = [
+            { label: 'Frontend',    sub: '80h · 22%', value: 80, color: '#3B82F6', dark: '#1D4ED8' },
+            { label: 'API / Backend', sub: '60h · 16%', value: 60, color: '#06B6D4', dark: '#0E7490' },
+            { label: 'MQTT / IoT',  sub: '45h · 12%', value: 45, color: '#818CF8', dark: '#4338CA' },
+            { label: 'Security',    sub: '45h · 12%', value: 45, color: '#38BDF8', dark: '#0284C7' },
+            { label: 'Databáza',    sub: '40h · 11%', value: 40, color: '#22D3EE', dark: '#0891B2' },
+            { label: 'Testing',     sub: '40h · 11%', value: 40, color: '#60A5FA', dark: '#2563EB' },
+            { label: 'Geofencing',  sub: '35h · 9%',  value: 35, color: '#93C5FD', dark: '#1E40AF' },
+            { label: 'Hardware',    sub: '25h · 7%',  value: 25, color: '#BAE6FD', dark: '#075985' },
+        ];
+        const total = segments.reduce((s, d) => s + d.value, 0);
+
+        // Ellipse params
+        const cx = 220, cy = 148, rx = 118, ry = 44, depth = 32;
+
+        // Defs
+        const defs = document.createElementNS(ns, 'defs');
+        defs.innerHTML = `
+          <filter id="pglow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="lglow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="pieShadow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(0,0,0,0)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0.35)"/>
+          </radialGradient>
+        `;
+        svg.appendChild(defs);
+
+        function ep(a) { return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) }; }
+        function arcPath(a1, a2, dy = 0) {
+            const p1 = ep(a1), p2 = ep(a2);
+            const large = (a2 - a1) > Math.PI ? 1 : 0;
+            return `M ${cx} ${cy+dy} L ${p1.x} ${p1.y+dy} A ${rx} ${ry} 0 ${large} 1 ${p2.x} ${p2.y+dy} Z`;
+        }
+
+        // Compute angles
+        let ang = -Math.PI / 2;
+        const segs = segments.map(s => {
+            const sweep = (s.value / total) * 2 * Math.PI;
+            const a1 = ang, a2 = ang + sweep, mid = ang + sweep / 2;
+            ang += sweep;
+            return { ...s, a1, a2, mid };
+        });
+
+        // --- Shadow ellipse ---
+        const shadow = document.createElementNS(ns, 'ellipse');
+        shadow.setAttribute('cx', cx); shadow.setAttribute('cy', cy + depth + 6);
+        shadow.setAttribute('rx', rx + 10); shadow.setAttribute('ry', ry + 4);
+        shadow.setAttribute('fill', 'rgba(0,0,0,0.2)');
+        svg.appendChild(shadow);
+
+        // --- Side walls (front-facing: angles 0..π) ---
+        const sideG = document.createElementNS(ns, 'g');
+        // Sort by how "front" they are (closer to π/2 = drawn last = on top)
+        const frontSegs = segs.map(s => {
+            const norm = a => ((a % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            const na1 = norm(s.a1), na2 = na1 + (s.a2 - s.a1);
+            // Clip to front [0, π]
+            const ca1 = Math.max(na1, 0), ca2 = Math.min(na2, Math.PI);
+            return { ...s, ca1, ca2, hasSide: ca2 > ca1 + 0.01 };
+        }).filter(s => s.hasSide)
+          .sort((a, b) => Math.abs(a.ca1 + (a.ca2-a.ca1)/2 - Math.PI/2) - Math.abs(b.ca1 + (b.ca2-b.ca1)/2 - Math.PI/2));
+        // Reversed: draw furthest first (near 0 or π), nearest last (near π/2)
+        frontSegs.reverse().forEach(s => {
+            const p1 = ep(s.ca1), p2 = ep(s.ca2);
+            const large = (s.ca2 - s.ca1) > Math.PI ? 1 : 0;
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('d',
+                `M ${p1.x} ${p1.y} A ${rx} ${ry} 0 ${large} 1 ${p2.x} ${p2.y}` +
+                ` L ${p2.x} ${p2.y+depth} A ${rx} ${ry} 0 ${large} 0 ${p1.x} ${p1.y+depth} Z`);
+            path.setAttribute('fill', s.dark);
+            path.setAttribute('opacity', '0.88');
+            sideG.appendChild(path);
+            // Edge lines
+            [[p1, s.ca1],[p2, s.ca2]].forEach(([p]) => {
+                const l = document.createElementNS(ns, 'line');
+                l.setAttribute('x1', p.x); l.setAttribute('y1', p.y);
+                l.setAttribute('x2', p.x); l.setAttribute('y2', p.y + depth);
+                l.setAttribute('stroke', 'rgba(0,0,0,0.25)'); l.setAttribute('stroke-width', '0.6');
+                sideG.appendChild(l);
+            });
+        });
+        svg.appendChild(sideG);
+
+        // --- Top faces (staggered fade-in via class) ---
+        const topG = document.createElementNS(ns, 'g');
+        segs.forEach((s, i) => {
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('d', arcPath(s.a1, s.a2));
+            path.setAttribute('fill', s.color);
+            path.setAttribute('opacity', '0.88');
+            path.setAttribute('stroke', 'rgba(0,10,30,0.55)');
+            path.setAttribute('stroke-width', '0.7');
+            path.setAttribute('filter', 'url(#pglow)');
+            path.classList.add('pie-seg');
+            path.dataset.delay = i;
+            topG.appendChild(path);
+        });
+        svg.appendChild(topG);
+
+        // --- Callout lines + labels ---
+        const labelG = document.createElementNS(ns, 'g');
+        segs.forEach((s, i) => {
+            const mid = s.mid;
+            const cosM = Math.cos(mid), sinM = Math.sin(mid);
+            // Start: edge of pie
+            const startX = cx + (rx + 12) * cosM;
+            const startY = cy + (ry + 8) * sinM;
+            // Elbow
+            const elbowLen = 22;
+            const elbowX = startX + cosM * elbowLen;
+            const elbowY = startY + sinM * elbowLen;
+            // Horizontal extension
+            const isRight = cosM >= 0;
+            const extLen = 38;
+            const endX = elbowX + (isRight ? extLen : -extLen);
+            const textX = endX + (isRight ? 6 : -6);
+            const anchor = isRight ? 'start' : 'end';
+
+            // Polyline (callout)
+            const line = document.createElementNS(ns, 'polyline');
+            line.setAttribute('points', `${startX},${startY} ${elbowX},${elbowY} ${endX},${elbowY}`);
+            line.setAttribute('stroke', s.color); line.setAttribute('stroke-width', '1');
+            line.setAttribute('fill', 'none'); line.setAttribute('filter', 'url(#lglow)');
+            line.setAttribute('opacity', '0.8');
+            line.classList.add('callout-line', 'c-hidden');
+            line.dataset.delay = i;
+            labelG.appendChild(line);
+
+            // Dot at start
+            const d1 = document.createElementNS(ns, 'circle');
+            d1.setAttribute('cx', startX); d1.setAttribute('cy', startY);
+            d1.setAttribute('r', '2.2'); d1.setAttribute('fill', s.color);
+            d1.classList.add('callout-label'); d1.dataset.delay = i;
+            labelG.appendChild(d1);
+
+            // Dot at end
+            const d2 = document.createElementNS(ns, 'circle');
+            d2.setAttribute('cx', endX); d2.setAttribute('cy', elbowY);
+            d2.setAttribute('r', '2.8'); d2.setAttribute('fill', s.color);
+            d2.classList.add('callout-label'); d2.dataset.delay = i;
+            labelG.appendChild(d2);
+
+            // Label
+            const lbl = document.createElementNS(ns, 'text');
+            lbl.setAttribute('x', textX); lbl.setAttribute('y', elbowY - 3);
+            lbl.setAttribute('text-anchor', anchor);
+            lbl.setAttribute('font-size', '11'); lbl.setAttribute('fill', '#CBD5E1');
+            lbl.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+            lbl.setAttribute('font-weight', '600');
+            lbl.textContent = s.label;
+            lbl.classList.add('callout-label'); lbl.dataset.delay = i;
+            labelG.appendChild(lbl);
+
+            // Sub (hours + %)
+            const sub = document.createElementNS(ns, 'text');
+            sub.setAttribute('x', textX); sub.setAttribute('y', elbowY + 11);
+            sub.setAttribute('text-anchor', anchor);
+            sub.setAttribute('font-size', '9.5'); sub.setAttribute('fill', s.color);
+            sub.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+            sub.setAttribute('font-weight', '700');
+            sub.textContent = s.sub;
+            sub.classList.add('callout-label'); sub.dataset.delay = i;
+            labelG.appendChild(sub);
+        });
+        svg.appendChild(labelG);
+    })();
+
+    // ==================== RADAR CHART ====================
+    (function buildRadar() {
+        const svg = document.getElementById('radarSvg');
+        if (!svg) return;
+        const ns = 'http://www.w3.org/2000/svg';
+
+        const axes = [
+            { label: 'LoRaWAN', sub: 'IoT protokoly', value: 85 },
+            { label: 'Backend',  sub: 'Flask / Python', value: 90 },
+            { label: 'Frontend', sub: 'React / Leaflet', value: 80 },
+            { label: 'Databázy', sub: 'PostgreSQL / PostGIS', value: 88 },
+            { label: 'DevOps',   sub: 'Docker / CI', value: 75 },
+            { label: 'Security', sub: 'TLS / CORS / MQTT', value: 82 },
+        ];
+        const cx = 185, cy = 188, maxR = 118, n = axes.length;
+
+        const defs = document.createElementNS(ns, 'defs');
+        defs.innerHTML = `
+          <filter id="rglow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(59,130,246,0.28)"/>
+            <stop offset="100%" stop-color="rgba(6,182,212,0.08)"/>
+          </radialGradient>
+        `;
+        svg.appendChild(defs);
+
+        function pt(i, r) {
+            const a = (i * 2 * Math.PI / n) - Math.PI / 2;
+            return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+        }
+        function pts(r) { return Array.from({length: n}, (_, i) => pt(i, r)); }
+        function polyPts(arr) { return arr.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' '); }
+
+        // Background grid (5 levels)
+        [0.2,0.4,0.6,0.8,1.0].forEach((lv, li) => {
+            const poly = document.createElementNS(ns, 'polygon');
+            poly.setAttribute('points', polyPts(pts(maxR * lv)));
+            poly.setAttribute('fill', li === 4 ? 'rgba(59,130,246,0.03)' : 'none');
+            poly.setAttribute('stroke', 'rgba(59,130,246,0.1)');
+            poly.setAttribute('stroke-width', li === 4 ? '1.2' : '0.8');
+            svg.appendChild(poly);
+        });
+
+        // Axis lines + tick values
+        axes.forEach((ax, i) => {
+            const outer = pt(i, maxR);
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+            line.setAttribute('x2', outer.x); line.setAttribute('y2', outer.y);
+            line.setAttribute('stroke', 'rgba(59,130,246,0.13)'); line.setAttribute('stroke-width', '1');
+            svg.appendChild(line);
+
+            // Tick percent at 60% mark
+            const tick = pt(i, maxR * 0.6);
+            const tickT = document.createElementNS(ns, 'text');
+            tickT.setAttribute('x', tick.x + (Math.cos((i*2*Math.PI/n)-Math.PI/2) > 0 ? 4 : -4));
+            tickT.setAttribute('y', tick.y + 3);
+            tickT.setAttribute('font-size', '7'); tickT.setAttribute('fill', 'rgba(100,116,139,0.6)');
+            tickT.setAttribute('text-anchor', Math.cos((i*2*Math.PI/n)-Math.PI/2) > 0 ? 'start' : 'end');
+            tickT.textContent = '60%';
+            svg.appendChild(tickT);
+        });
+
+        // Data polygon (animated via class)
+        const dataPts = axes.map((ax, i) => pt(i, maxR * ax.value / 100));
+        const area = document.createElementNS(ns, 'polygon');
+        area.setAttribute('points', polyPts(dataPts));
+        area.setAttribute('fill', 'url(#radarFill)');
+        area.setAttribute('stroke', 'none');
+        area.classList.add('radar-area');
+        svg.appendChild(area);
+
+        const poly = document.createElementNS(ns, 'polygon');
+        poly.setAttribute('points', polyPts(dataPts));
+        poly.setAttribute('fill', 'none');
+        poly.setAttribute('stroke', '#3B82F6'); poly.setAttribute('stroke-width', '2');
+        poly.setAttribute('filter', 'url(#rglow)');
+        poly.classList.add('radar-polygon');
+        svg.appendChild(poly);
+
+        // Data dots + value labels
+        dataPts.forEach((p, i) => {
+            const dot = document.createElementNS(ns, 'circle');
+            dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+            dot.setAttribute('r', '4.5'); dot.setAttribute('fill', '#60A5FA');
+            dot.setAttribute('stroke', 'rgba(255,255,255,0.18)'); dot.setAttribute('stroke-width', '1.5');
+            svg.appendChild(dot);
+
+            const cosA = Math.cos((i*2*Math.PI/n) - Math.PI/2);
+            const sinA = Math.sin((i*2*Math.PI/n) - Math.PI/2);
+            const vx = p.x + cosA * 14, vy = p.y + sinA * 14;
+            const vt = document.createElementNS(ns, 'text');
+            vt.setAttribute('x', vx); vt.setAttribute('y', vy + 4);
+            vt.setAttribute('text-anchor', 'middle');
+            vt.setAttribute('font-size', '9.5'); vt.setAttribute('fill', '#93C5FD');
+            vt.setAttribute('font-weight', '700');
+            vt.textContent = axes[i].value + '%';
+            svg.appendChild(vt);
+        });
+
+        // Axis labels
+        axes.forEach((ax, i) => {
+            const labelR = maxR + 26;
+            const p = pt(i, labelR);
+            const cosA = Math.cos((i*2*Math.PI/n) - Math.PI/2);
+            const anchor = Math.abs(cosA) < 0.2 ? 'middle' : (cosA > 0 ? 'start' : 'end');
+
+            const lbl = document.createElementNS(ns, 'text');
+            lbl.setAttribute('x', p.x); lbl.setAttribute('y', p.y);
+            lbl.setAttribute('text-anchor', anchor);
+            lbl.setAttribute('font-size', '11.5'); lbl.setAttribute('fill', '#E2E8F0');
+            lbl.setAttribute('font-weight', '700');
+            lbl.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+            lbl.textContent = ax.label;
+            svg.appendChild(lbl);
+
+            const sub = document.createElementNS(ns, 'text');
+            sub.setAttribute('x', p.x); sub.setAttribute('y', p.y + 14);
+            sub.setAttribute('text-anchor', anchor);
+            sub.setAttribute('font-size', '8.5'); sub.setAttribute('fill', '#475569');
+            sub.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+            sub.textContent = ax.sub;
+            svg.appendChild(sub);
+        });
+
+        // Center dot
+        const cdot = document.createElementNS(ns, 'circle');
+        cdot.setAttribute('cx', cx); cdot.setAttribute('cy', cy);
+        cdot.setAttribute('r', '3'); cdot.setAttribute('fill', 'rgba(59,130,246,0.5)');
+        svg.appendChild(cdot);
+    })();
+
+    // ==================== CHARTS SCROLL TRIGGER ====================
+    const chartsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            // Pie segments staggered
+            entry.target.querySelectorAll('.pie-seg').forEach(el => {
+                const delay = parseInt(el.dataset.delay || 0);
+                setTimeout(() => el.classList.add('pie-visible'), delay * 100);
+            });
+            // Callout lines + labels staggered
+            entry.target.querySelectorAll('.callout-line, .callout-label').forEach(el => {
+                const delay = parseInt(el.dataset.delay || 0);
+                setTimeout(() => el.classList.add('c-visible'), 300 + delay * 90);
+            });
+            // Radar
+            setTimeout(() => {
+                entry.target.querySelectorAll('.radar-polygon, .radar-area').forEach(el => el.classList.add('radar-visible'));
+            }, 200);
+            chartsObserver.unobserve(entry.target);
+        });
+    }, { threshold: 0.25 });
+    const chartsDuo = document.getElementById('chartsDuo');
+    if (chartsDuo) chartsObserver.observe(chartsDuo);
+
+    // ==================== BATTERY PIE CHART ====================
+    (function buildBatteryPie() {
+        const svg = document.getElementById('batteryPieSvg');
+        if (!svg) return;
+        const ns = 'http://www.w3.org/2000/svg';
+
+        const segs = [
+            { label:'GPS akvizícia',    sub:'Aktívny fix',      pct:38, col:'#3B82F6', dark:'#1D4ED8' },
+            { label:'LoRaWAN TX',       sub:'60–300s interval', pct:24, col:'#06B6D4', dark:'#0E7490' },
+            { label:'BLE skenovanie',   sub:'WiFi loc. assist', pct:14, col:'#818CF8', dark:'#4338CA' },
+            { label:'Sleep / Idle',     sub:'Deep sleep',       pct:13, col:'#1E40AF', dark:'#1e3a8a' },
+            { label:'Senzory + sys',    sub:'Temp, accel',      pct:11, col:'#0EA5E9', dark:'#0369A1' },
+        ];
+        const total = 100;
+        const cx=155, cy=118, ro=78, ri=50;
+        const ff = '-apple-system,BlinkMacSystemFont,sans-serif';
+
+        // Donut segment path
+        function seg(a1, a2, r) {
+            const c1=Math.cos(a1), s1=Math.sin(a1), c2=Math.cos(a2), s2=Math.sin(a2);
+            const large = (a2-a1) > Math.PI ? 1 : 0;
+            return `M ${cx+r*c1} ${cy+r*s1} A ${r} ${r} 0 ${large} 1 ${cx+r*c2} ${cy+r*s2}`;
+        }
+        function donutSeg(a1, a2) {
+            const c2=Math.cos(a2), s2=Math.sin(a2), c1=Math.cos(a1), s1=Math.sin(a1);
+            const large = (a2-a1) > Math.PI ? 1 : 0;
+            return `M ${cx+ro*c1} ${cy+ro*s1} A ${ro} ${ro} 0 ${large} 1 ${cx+ro*c2} ${cy+ro*s2} L ${cx+ri*c2} ${cy+ri*s2} A ${ri} ${ri} 0 ${large} 0 ${cx+ri*c1} ${cy+ri*s1} Z`;
+        }
+
+        const defs = document.createElementNS(ns,'defs');
+        defs.innerHTML = `
+          <filter id="bpglow" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="bpCenter" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(59,130,246,0.06)"/>
+            <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+          </radialGradient>`;
+        svg.appendChild(defs);
+
+        // Outer decorative ring
+        const outerRing = document.createElementNS(ns,'circle');
+        outerRing.setAttribute('cx',cx); outerRing.setAttribute('cy',cy);
+        outerRing.setAttribute('r',ro+8); outerRing.setAttribute('fill','none');
+        outerRing.setAttribute('stroke','rgba(59,130,246,0.1)'); outerRing.setAttribute('stroke-width','1');
+        outerRing.setAttribute('stroke-dasharray','4,6');
+        svg.appendChild(outerRing);
+
+        // Inner glow circle
+        const innerGlow = document.createElementNS(ns,'circle');
+        innerGlow.setAttribute('cx',cx); innerGlow.setAttribute('cy',cy);
+        innerGlow.setAttribute('r',ri); innerGlow.setAttribute('fill','url(#bpCenter)');
+        svg.appendChild(innerGlow);
+
+        // Compute angles & draw segments
+        let angle = -Math.PI/2;
+        const segData = segs.map(s => {
+            const sweep = (s.pct/total)*2*Math.PI;
+            const a1=angle, a2=angle+sweep, mid=angle+sweep/2;
+            angle += sweep;
+            return {...s, a1, a2, mid};
+        });
+
+        // Glow halos first (behind segments)
+        segData.forEach(s => {
+            const halo = document.createElementNS(ns,'path');
+            halo.setAttribute('d', donutSeg(s.a1, s.a2));
+            halo.setAttribute('fill', s.col); halo.setAttribute('opacity','0.12');
+            halo.classList.add('pie-seg'); halo.dataset.delay = segData.indexOf(s);
+            svg.appendChild(halo);
+        });
+
+        // Segments
+        const gap = 0.025;
+        segData.forEach((s,i) => {
+            const path = document.createElementNS(ns,'path');
+            path.setAttribute('d', donutSeg(s.a1+gap, s.a2-gap));
+            path.setAttribute('fill', s.col); path.setAttribute('opacity','0.9');
+            path.setAttribute('filter','url(#bpglow)');
+            path.setAttribute('stroke','rgba(0,5,15,0.4)'); path.setAttribute('stroke-width','0.5');
+            path.classList.add('pie-seg'); path.dataset.delay = i;
+            svg.appendChild(path);
+        });
+
+        // Center content
+        const cBg = document.createElementNS(ns,'circle');
+        cBg.setAttribute('cx',cx); cBg.setAttribute('cy',cy);
+        cBg.setAttribute('r',ri-3); cBg.setAttribute('fill','rgba(5,8,20,0.7)');
+        svg.appendChild(cBg);
+
+        const cVal = document.createElementNS(ns,'text');
+        cVal.setAttribute('x',cx); cVal.setAttribute('y',cy-4);
+        cVal.setAttribute('text-anchor','middle'); cVal.setAttribute('font-size','18');
+        cVal.setAttribute('fill','#E2E8F0'); cVal.setAttribute('font-weight','800');
+        cVal.setAttribute('font-family',ff); cVal.textContent='700';
+        svg.appendChild(cVal);
+
+        const cUnit = document.createElementNS(ns,'text');
+        cUnit.setAttribute('x',cx); cUnit.setAttribute('y',cy+12);
+        cUnit.setAttribute('text-anchor','middle'); cUnit.setAttribute('font-size','10');
+        cUnit.setAttribute('fill','#60A5FA'); cUnit.setAttribute('font-weight','600');
+        cUnit.setAttribute('letter-spacing','0.05em'); cUnit.setAttribute('font-family',ff);
+        cUnit.textContent='mAh'; svg.appendChild(cUnit);
+
+        const cSub = document.createElementNS(ns,'text');
+        cSub.setAttribute('x',cx); cSub.setAttribute('y',cy+24);
+        cSub.setAttribute('text-anchor','middle'); cSub.setAttribute('font-size','7.5');
+        cSub.setAttribute('fill','#475569'); cSub.setAttribute('font-family',ff);
+        cSub.textContent='LiPo batéria'; svg.appendChild(cSub);
+
+        // Callout lines + labels
+        const labelG = document.createElementNS(ns,'g');
+        segData.forEach((s,i) => {
+            const mid = s.mid;
+            const cosM = Math.cos(mid), sinM = Math.sin(mid);
+            const lineStart = { x: cx + (ro+8)*cosM, y: cy + (ro+8)*sinM };
+            const elbowLen = 20;
+            const elbowX = lineStart.x + cosM*elbowLen;
+            const elbowY = lineStart.y + sinM*elbowLen;
+            const isRight = cosM >= 0;
+            const extLen = isRight ? 38 : 40;
+            const endX = elbowX + (isRight ? extLen : -extLen);
+            const textX = endX + (isRight ? 5 : -5);
+            const anchor = isRight ? 'start' : 'end';
+
+            // Dot on segment edge
+            const startDot = document.createElementNS(ns,'circle');
+            startDot.setAttribute('cx', lineStart.x); startDot.setAttribute('cy', lineStart.y);
+            startDot.setAttribute('r','1.5'); startDot.setAttribute('fill', s.col);
+            startDot.setAttribute('opacity','0.7');
+            startDot.classList.add('callout-label'); startDot.dataset.delay = i;
+            labelG.appendChild(startDot);
+
+            // Polyline callout
+            const line = document.createElementNS(ns,'polyline');
+            line.setAttribute('points', `${lineStart.x},${lineStart.y} ${elbowX},${elbowY} ${endX},${elbowY}`);
+            line.setAttribute('stroke', s.col); line.setAttribute('stroke-width','0.7');
+            line.setAttribute('fill','none'); line.setAttribute('opacity','0.45');
+            line.classList.add('callout-line'); line.dataset.delay = i;
+            labelG.appendChild(line);
+
+            // End dot
+            const endDot = document.createElementNS(ns,'circle');
+            endDot.setAttribute('cx',endX); endDot.setAttribute('cy',elbowY);
+            endDot.setAttribute('r','1.5'); endDot.setAttribute('fill',s.col);
+            endDot.setAttribute('opacity','0.8');
+            endDot.classList.add('callout-label'); endDot.dataset.delay = i;
+            labelG.appendChild(endDot);
+
+            // Label + pct + sub
+            const lbl = document.createElementNS(ns,'text');
+            lbl.setAttribute('x',textX); lbl.setAttribute('y',elbowY-2);
+            lbl.setAttribute('text-anchor',anchor); lbl.setAttribute('font-size','8.5');
+            lbl.setAttribute('fill','#94A3B8'); lbl.setAttribute('font-weight','500');
+            lbl.setAttribute('letter-spacing','0.02em');
+            lbl.setAttribute('font-family',ff);
+            lbl.textContent = s.label;
+            lbl.classList.add('callout-label'); lbl.dataset.delay = i;
+            labelG.appendChild(lbl);
+
+            const pct = document.createElementNS(ns,'text');
+            pct.setAttribute('x',textX); pct.setAttribute('y',elbowY+8);
+            pct.setAttribute('text-anchor',anchor); pct.setAttribute('font-size','7.5');
+            pct.setAttribute('fill',s.col); pct.setAttribute('font-weight','600');
+            pct.setAttribute('opacity','0.85');
+            pct.setAttribute('font-family',ff);
+            pct.textContent = s.pct+'%  '+s.sub;
+            pct.classList.add('callout-label'); pct.dataset.delay = i;
+            labelG.appendChild(pct);
+        });
+        svg.appendChild(labelG);
+
+        // Observer
+        const bpObs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                e.target.querySelectorAll('.pie-seg').forEach((el,i) => {
+                    setTimeout(() => el.classList.add('pie-visible'), i*90);
+                });
+                e.target.querySelectorAll('.callout-line').forEach((el,i) => {
+                    setTimeout(() => el.classList.add('c-visible'), 300+i*80);
+                });
+                e.target.querySelectorAll('.callout-label').forEach((el,i) => {
+                    setTimeout(() => el.classList.add('c-visible'), 380+i*70);
+                });
+                bpObs.unobserve(e.target);
+            });
+        }, { threshold: 0.3 });
+        const bpEl = document.getElementById('batteryChart');
+        if (bpEl) bpObs.observe(bpEl);
+    })();
+
+
+</script>
+
+</body>
+</html>
