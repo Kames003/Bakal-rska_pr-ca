@@ -26,7 +26,7 @@ Systém som navrhol ako viacvrstvovú architektúru pozostávajúcu zo šiestich
 
     \item \textbf{Backend Server} -- Python aplikácia postavená na frameworku Flask, ktorá prijíma správy z~MQTT brokera, parsuje ich, validuje a~ukladá do databázy. Zároveň poskytuje REST API pre frontend a~WebSocket spojenie pre real-time aktualizácie.
 
-    \item \textbf{Databáza} -- PostgreSQL 16 s~rozšíreniami TimescaleDB pre efektívne ukladanie časových rád a~PostGIS pre geospatial operácie. Táto kombinácia umožňuje efektívne spracovanie veľkého množstva GPS záznamov a~priestorové dotazy.
+    \item \textbf{Databáza} -- PostgreSQL 16 s~rozšíreniami TimescaleDB a~PostGIS. \textbf{TimescaleDB} je rozšírenie optimalizované pre časové rady -- automaticky komprimuje historické dáta, umožňuje efektívne dotazy nad veľkým množstvom časovo zoradených GPS záznamov a~škáluje s~rastúcim počtom zariadení. \textbf{PostGIS} pridáva podporu geografických dát priamo do databázy -- umožňuje výpočty vzdialeností medzi súradnicami, priestorové dotazy a~implementáciu geofencingu bez nutnosti prenášať dáta do aplikačnej vrstvy.
 
     \item \textbf{Frontend} -- Single Page Application postavená na React 19 s~mapovou knižnicou Leaflet.js, ktorá poskytuje interaktívne používateľské rozhranie pre vizualizáciu pozícií, histórie pohybu a~správu geofencing zón.
 \end{enumerate}
