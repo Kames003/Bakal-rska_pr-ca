@@ -51,7 +51,7 @@ Pre lepšie pochopenie fungovania systému je dôležité popísať životný cy
 
     \item \textbf{Spracovanie backendom} -- Backend ako MQTT subscriber prijme správu, spustí parser na extrakciu relevantných informácií a~vykoná validácie.
 
-    \item \textbf{Uloženie do databázy} -- Validované dáta sú uložené do PostgreSQL. Trigger automaticky vytvorí PostGIS POINT z~GPS súradníc a~aktualizuje last\_seen zariadenia.
+    \item \textbf{Uloženie do databázy} -- Validované dáta sú uložené do PostgreSQL. Trigger automaticky vytvorí PostGIS POINT z~GPS súradníc a~aktualizuje atribút last\_seen zariadenia.
 
     \item \textbf{WebSocket broadcast} -- Backend cez Socket.IO odošle novú pozíciu všetkým pripojeným klientom. Zároveň skontroluje geofence pravidlá a~prípadne vygeneruje alerty.
 
@@ -675,7 +675,7 @@ Pre zníženie komplexity aplikačnej logiky som implementoval databázové trig
 \begin{itemize}
     \item \textbf{populate\_location} -- Pri INSERT do \texttt{positions} automaticky vytvorí PostGIS POINT z~lat/lon súradníc.
 
-    \item \textbf{update\_last\_seen} -- Pri INSERT do \texttt{positions} aktualizuje \texttt{last\_seen} timestamp v~tabuľke \texttt{devices}.
+    \item \textbf{update\_last\_seen} -- Pri INSERT do \texttt{positions} aktualizuje atribút \texttt{last\_seen} v~tabuľke \texttt{devices}.
 \end{itemize}
 
 Tento prístup zabezpečuje konzistenciu dát aj v~prípade, že by sa niekto pokúsil vložiť dáta priamo do databázy bez použitia aplikácie.
