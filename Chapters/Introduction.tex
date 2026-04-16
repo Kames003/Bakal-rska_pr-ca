@@ -23,7 +23,7 @@ Internet vecí (IoT -- Internet of Things) predstavuje jedno z~najdynamickejšie
 
 %% CIELE PRÁCE %%
 
-Hlavným cieľom práce bolo navrhnúť a~implementovať GPS tracking systém postavený na technológii LoRaWAN, ktorý umožní real-time sledovanie osôb vybavených GPS trackermi. Systém mal spracovávať dáta z~trackerov SenseCap T1000-B komunikujúcich cez LoRaWAN gateway, ukladať ich do databázy optimalizovanej pre časové rady a~zobrazovať v~interaktívnej webovej aplikácii. Medzi čiastkové ciele patrilo zabezpečenie spoľahlivého príjmu a~parsovania dát z~trackerov, návrh škálovateľnej databázovej schémy s~využitím rozšírení PostgreSQL (TimescaleDB pre časové rady, PostGIS pre priestorové dotazy), implementácia REST~API s~WebSocket komunikáciou pre real-time aktualizácie, a~funkcionalita geofencingu s~automatickými upozorneniami pri vstupe alebo výstupe sledovaných osôb z~definovaných zón.
+Hlavným cieľom práce bolo navrhnúť a~implementovať IoT systém pre monitorovanie a~analýzu pohybu osôb s~využitím LoRaWAN a~GPS, ktorý umožní sledovanie osôb vybavených GPS trackermi v~reálnom čase. Systém mal spracovávať dáta z~trackerov SenseCap T1000-B komunikujúcich cez LoRaWAN gateway, ukladať ich do databázy optimalizovanej pre časové rady a~zobrazovať v~interaktívnej webovej aplikácii. Medzi čiastkové ciele patrilo zabezpečenie spoľahlivého príjmu a~parsovania dát z~trackerov, návrh škálovateľnej databázovej schémy s~využitím rozšírení PostgreSQL (TimescaleDB pre časové rady, PostGIS pre priestorové dotazy), implementácia REST~API s~WebSocket komunikáciou pre real-time aktualizácie, a~funkcionalita geofencingu s~automatickými upozorneniami pri vstupe alebo výstupe sledovaných osôb z~definovaných zón.
 
 %% PREHĽAD NAJDÔLEŽITEJŠÍCH ZDROJOV %%
 
