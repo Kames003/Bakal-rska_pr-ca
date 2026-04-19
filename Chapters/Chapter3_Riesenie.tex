@@ -1048,26 +1048,12 @@ WHERE ST_Contains(
     \label{fig:geo-alerts}
 \end{figure}
 
-Výsledok detekcie je viditeľný na Obrázku~\ref{fig:geo-alerts}, kde ľavý panel zobrazuje rozdelenie zariadení na INSIDE a~OUTSIDE. Táto architektúra zabezpečuje detekciu v~reálnom čase s~minimálnou latenciou. Obrázok~\ref{fig:geo-delete} zobrazuje možnosť odstránenia zóny cez kontextové menu.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/mazanie_zony.png}
-    \caption{Mazanie geofence zóny -- používateľ môže zónu odstrániť cez kontextové menu}
-    \label{fig:geo-delete}
-\end{figure}
+Výsledok detekcie je viditeľný na Obrázku~\ref{fig:geo-alerts}, kde ľavý panel zobrazuje rozdelenie zariadení na INSIDE a~OUTSIDE. Táto architektúra zabezpečuje detekciu v~reálnom čase s~minimálnou latenciou. Možnosť odstránenia zóny cez kontextové menu zobrazuje Obrázok~\ref{fig:geo-delete}.
 
 \subsection{Points of Interest}
 \label{sec:POI}
 
 POI (Points of Interest) sú významné body na mape -- stage, bar, first aid, toalety, informačný stánok a~podobne. Na rozdiel od geofences, ktoré sú polygóny, POI sú body s~definovaným rádiusom. Štatistiky návštevnosti POI zobrazuje Obrázok~\ref{fig:poi-stats}.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/statistika_v_point_of_interest.png}
-    \caption{Štatistiky POI -- zobrazuje Total Visits a~aktuálny počet zariadení Inside Now}
-    \label{fig:poi-stats}
-\end{figure}
 
 Implementované funkcie POI:
 
@@ -1079,22 +1065,27 @@ Implementované funkcie POI:
     \item Vizualizácia na mape ako kruh s~definovaným rádiusom
 \end{itemize}
 
-Editácia existujúceho POI je znázornená na Obrázku~\ref{fig:poi-edit}.
+Editácia existujúceho POI je znázornená na Obrázku~\ref{fig:poi-edit}. Funkcia nearby search (Obrázok~\ref{fig:nearby-search}) využíva PostGIS \texttt{ST\_DWithin} pre efektívne vyhľadanie zariadení v~okruhu od POI. Konzultant ocenil túto funkcionalitu ako veľmi praktickú pre reálne nasadenie.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{Figures/editacia_point_of_interest.png}
-    \caption{Editácia Point of Interest -- úprava názvu, popisu, súradníc, rádiusu a~farby}
-    \label{fig:poi-edit}
-\end{figure}
-
-Funkcia nearby search (Obrázok~\ref{fig:nearby-search}) využíva PostGIS \texttt{ST\_DWithin} pre efektívne vyhľadanie zariadení v~okruhu od POI. Konzultant ocenil túto funkcionalitu ako veľmi praktickú pre reálne nasadenie.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\textwidth]{Figures/filtrovanie_trackerov_nearby.png}
-    \caption{Nearby Trackers -- vyhľadanie zariadení v~definovanom okruhu s~možnosťou výberu rádiusu (5--50~km)}
-    \label{fig:nearby-search}
+    \subfloat[Mazanie geofence zóny cez kontextové menu\label{fig:geo-delete}]{%
+        \includegraphics[width=0.46\textwidth]{Figures/mazanie_zony.png}%
+    }
+    \hfill
+    \subfloat[Štatistiky POI -- Total Visits a~Inside Now\label{fig:poi-stats}]{%
+        \includegraphics[width=0.46\textwidth]{Figures/statistika_v_point_of_interest.png}%
+    }
+    \\[1ex]
+    \subfloat[Editácia Point of Interest\label{fig:poi-edit}]{%
+        \includegraphics[width=0.46\textwidth]{Figures/editacia_point_of_interest.png}%
+    }
+    \hfill
+    \subfloat[Nearby Trackers -- vyhľadanie v~okruhu\label{fig:nearby-search}]{%
+        \includegraphics[width=0.46\textwidth]{Figures/filtrovanie_trackerov_nearby.png}%
+    }
+    \caption{Prehľad rozšírených UI funkcií: mazanie geofence zóny, štatistiky POI, editácia POI a~nearby search}
+    \label{fig:ui-grid}
 \end{figure}
 
 \subsection{Device Tags}
@@ -1111,14 +1102,7 @@ Typické use cases:
     \item \textbf{medical} -- Zdravotnícky personál
 \end{itemize}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/sortovanie_v_lavej_liste.png}
-    \caption{Filtrovanie zariadení podľa tagov v~ľavom paneli}
-    \label{fig:tags-filter}
-\end{figure}
-
-Filtrovanie podľa tagov (Obrázok~\ref{fig:tags-filter}) umožňuje operátorovi rýchlo zobraziť len relevantné zariadenia -- napríklad len security pri riešení bezpečnostného incidentu.
+Filtrovanie podľa tagov umožňuje operátorovi rýchlo zobraziť len relevantné zariadenia -- napríklad len security pri riešení bezpečnostného incidentu.
 
 \begin{figure}[htbp]
     \centering
