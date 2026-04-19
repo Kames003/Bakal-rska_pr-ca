@@ -1005,9 +1005,15 @@ Proces vytvorenia zóny:
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.95\textwidth]{Figures/zony_novsia_verzia.png}
-    \caption{Geofencing rozhranie -- ľavý panel zobrazuje aktívne zóny s~rozdelením zariadení na INSIDE a~OUTSIDE, popup na mape zobrazuje detail zóny s~popisom}
-    \label{fig:geo-zones}
+    \subfloat[Geofencing rozhranie -- ľavý panel s~aktívnymi zónami a~popup s~detailom zóny\label{fig:geo-zones}]{%
+        \includegraphics[width=0.48\textwidth]{Figures/zony_novsia_verzia.png}%
+    }
+    \hfill
+    \subfloat[Detail zóny -- rozbalený zoznam trackerov s~rozdelením na INSIDE a~OUTSIDE\label{fig:geo-alerts}]{%
+        \includegraphics[width=0.48\textwidth]{Figures/geo-zone-alerts.png}%
+    }
+    \caption{Geofencing UI: prehľad aktívnych zón (a) a~detail zóny s~distribúciou trackerov INSIDE/OUTSIDE (b)}
+    \label{fig:geo-ui}
 \end{figure}
 
 \subsubsection{Entry/Exit Detekcia}
@@ -1040,13 +1046,6 @@ WHERE ST_Contains(
 -- Parametre: $1 = longitude, $2 = latitude
 -- Výsledok: zoznam zón, v ktorých sa zariadenie nachádza
 \end{lstlisting}
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.95\textwidth]{Figures/geo-zone-alerts.png}
-    \caption{Detail geofence zóny -- rozbalený zoznam trackerov s~rozdelením na INSIDE a~OUTSIDE, popup zobrazuje súhrnné počty}
-    \label{fig:geo-alerts}
-\end{figure}
 
 Výsledok detekcie je viditeľný na Obrázku~\ref{fig:geo-alerts}, kde ľavý panel zobrazuje rozdelenie zariadení na INSIDE a~OUTSIDE. Táto architektúra zabezpečuje detekciu v~reálnom čase s~minimálnou latenciou. Možnosť odstránenia zóny cez kontextové menu zobrazuje Obrázok~\ref{fig:geo-delete}.
 
