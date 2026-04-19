@@ -502,7 +502,7 @@ Tento prístup má svoje limitácie -- nezachytí pomalý drift, kde sa pozícia
 \section{Databáza}
 \label{sec:Databaze}
 
-Návrh databázovej vrstvy bol jednou z~najkritickejších častí projektu. GPS tracking systém generuje veľké množstvo dát -- pri 100 trackeroch s~5-minútovým intervalom to je 28 800 záznamov denne. Potreboval som riešenie, ktoré efektívne ukladá časové rady, podporuje geospatial operácie a~škáluje s~rastúcim počtom zariadení.
+Návrh databázovej vrstvy bol jednou z~najkritickejších častí projektu. IoT systém pre monitorovanie pohybu osôb generuje veľké množstvo dát -- pri 100 trackeroch s~5-minútovým intervalom to je 28 800 záznamov denne. Potreboval som riešenie, ktoré efektívne ukladá časové rady, podporuje geospatial operácie a~škáluje s~rastúcim počtom zariadení.
 
 \subsection{Výber databázových technológií}
 \label{sec:VyberTechnologii}
@@ -648,7 +648,7 @@ Vzťahy medzi tabuľkami sú znázornené na Obrázku~\ref{fig:er-diagram} a~sú
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.95\textwidth]{Figures/er_diagram_final.png}
-    \caption{ER diagram databázovej schémy GPS tracking systému}
+    \caption{ER diagram databázovej schémy systému}
     \label{fig:er-diagram}
 \end{figure}
 
